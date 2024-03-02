@@ -3,6 +3,8 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
+#include "logger.h"
+
 int main()
 {
     const GLuint width = 800;
@@ -10,9 +12,10 @@ int main()
 
     if(!glfwInit())
     {
-        std::cerr << "ERROR: Failed to initialize GLFW\n";
+        Logger::get().log("Failed to initialized GLFW", true);
         return -1;
     }
+    Logger::get().log("Initialized GLFW");
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -22,20 +25,20 @@ int main()
 
     if(!window)
     {
-        std::cerr << "ERROR: Failed to create GLFW window\n";
+        Logger::get().log("Failed to create GLFW window");
         glfwTerminate();
         return -1;
     }
+    Logger::get().log("Created GLFW window");
 
     int version = gladLoadGL(glfwGetProcAddress);
     if(!version)
     {
-        std::cerr << "ERROR: Failed to initialize OpenGL context\n";
+        Logger::get().log("Failed to initialize OpenGL context", true);
         glfwTerminate();
         return -1;
     }
-
-    std::cout<<"Loaded OpenGL " << GLAD_VERSION_MAJOR(version)<< '.' << GLAD_VERSION_MINOR(version) << '\n';
+    Logger::get().log("Loaded OpenGL " + std::to_string(GLAD_VERSION_MAJOR(version)) + '.' + std::to_string(GLAD_VERSION_MINOR(version)));
 
     glViewport(0, 0, width, height);
 
