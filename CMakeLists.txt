@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.29)
 
-project(SomkeSimulation)
+project(OceanSimulation)
 set(CMAKE_CXX_STANDARD 20)
 
 # GLFW
