@@ -9,7 +9,7 @@
 
 ## Clone
 ```
-git clone --recurcive https://github.com/GGryg/smoke-simulation.git
+git clone --recurcive https://github.com/GGryg/ocean-simulation.git
 ```
 
 ## Build
