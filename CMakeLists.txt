@@ -16,6 +16,7 @@ add_executable(${CMAKE_PROJECT_NAME}
                                     "src/main.cpp"
                                     "libs/glad/src/gl.c"
                                     "src/logger/logger.cpp"
+                                    "src/window.cpp"
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
