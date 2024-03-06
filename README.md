@@ -1,5 +1,4 @@
-# smoke-simulation
-
+# Ocean-simulation
 
 ## Requirements
 - C++ 20 compiler
