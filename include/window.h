@@ -14,14 +14,20 @@ public:
     GLFWwindow* window() const;
     GLuint width() const;
     GLuint height() const;
+    const std::string& title() const;
     void setViewport();
     bool isOpen() const;
     void close();
+    void swapBuffers() const;
+    void pollEvents() const;
     
 private:
+    void init();
+
     GLFWwindow* m_window = nullptr;
     GLuint m_width{};
     GLuint m_height{};
+    std::string m_title;
 };
 
 #endif
