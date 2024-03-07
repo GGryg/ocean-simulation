@@ -17,8 +17,18 @@ add_executable(${CMAKE_PROJECT_NAME}
                                     "libs/glad/src/gl.c"
                                     "src/logger/logger.cpp"
                                     "src/window.cpp"
+                                    "src/buffers.cpp"
+                                    "src/resourceManager.cpp"
+                                    "src/shader.cpp"
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
                                     glfw
+)
+
+add_custom_command(
+    TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/shaders
+            ${CMAKE_BINARY_DIR}/shaders
 )
