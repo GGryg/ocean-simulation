@@ -1,0 +1,36 @@
+#ifndef SHADER_H
+#define SHADER_H
+
+#include <glad/gl.h>
+#include <string>
+
+enum class ShaderType
+{
+    normal,
+    compute
+};
+
+enum class ErrorType
+{
+    shader,
+    program
+};
+
+class Shader
+{
+public:
+    Shader(const std::string& vertexShaderSource, const std::string& framgnetShaderSource);
+    Shader(const std::string& computeShaderSource);
+    Shader() {}
+
+    void use() const;
+
+private:
+    GLuint compile(const std::string& source, GLenum type);
+    void checkErrors(GLuint shader, ErrorType type);
+
+    GLuint m_id{};
+    ShaderType m_type{};
+};
+
+#endif
