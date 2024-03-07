@@ -1,0 +1,72 @@
+#include "buffers.h"
+
+GLuint getSizeOfElement(const VBufferElement& element)
+{
+    if(element.type == GL_FLOAT)
+    {
+        return element.count * sizeof(GLfloat);
+    }
+    else if(element.type == GL_UNSIGNED_INT)
+    {
+        return element.count * sizeof(GLuint);
+    }
+
+    return 0;
+}
+
+VBuffer::VBuffer(const void* data, std::size_t size)
+{
+    glGenBuffers(1, &m_id);
+    bind();
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+}
+
+VBuffer::~VBuffer()
+{
+    glDeleteBuffers(1, &m_id);
+}
+
+void VBuffer::bind() const
+{
+    glBindBuffer(GL_ARRAY_BUFFER, m_id);
+}
+
+void VBuffer::unbind() const
+{
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+VArray::VArray()
+{
+    glGenVertexArrays(1, &m_id);
+}
+
+VArray::~VArray()
+{
+    glDeleteVertexArrays(1, &m_id);
+}
+
+void VArray::addBuffer(const VBuffer& vb, const VBufferLayout& layout)
+{
+    bind();
+    vb.bind();
+    GLuint offset{};
+    const std::vector<VBufferElement> elements = layout.elements();
+    for(GLuint i = 0; i < elements.size(); ++i)
+    {
+        const VBufferElement element = elements[i];
+        glEnableVertexAttribArray(i);
+        glVertexAttribPointer(i, element.count, element.type, GL_FALSE, layout.stride(), (const void*)offset);
+        offset += getSizeOfElement(element);
+    }
+}
+
+void VArray::bind() const
+{
+    glBindVertexArray(m_id);
+}
+
+void VArray::unbind() const
+{
+    glBindVertexArray(0);
+}
