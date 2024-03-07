@@ -1,10 +1,13 @@
 #include <iostream>
+#include <vector>
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
 #include "logger.h"
+#include "resourceManager.h"
 #include "window.h"
+#include "buffers.h"
 
 int main()
 {
@@ -13,24 +16,34 @@ int main()
 
     Window window{width, height, "Ocean Simulation"};
 
-    int version = gladLoadGL(glfwGetProcAddress);
-    if(!version)
-    {
-        Logger::get().log("Failed to initialize OpenGL context", true);
-        return -1;
-    }
-    Logger::get().log("Loaded OpenGL " + std::to_string(GLAD_VERSION_MAJOR(version)) + '.' + std::to_string(GLAD_VERSION_MINOR(version)));
+    std::vector<GLfloat> positions = {
+        // positions            colors
+         0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f,
+         0.0f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f,
+    };
 
-    window.setViewport();
-
+    VArray vao;
+    VBuffer vbo{positions.data(), positions.size() * sizeof(GLfloat)};
+    VBufferLayout layout;
+    layout.addElement<GLfloat>(3);
+    layout.addElement<GLfloat>(3);
+    vao.addBuffer(vbo, layout);
+    
+    Shader shader = ResourceManager::get().loadShader("basic", "shaders/triangle/vert.vs", "shaders/triangle/frag.fs");
+    
     while(window.isOpen())
     {
-        glfwPollEvents();
 
         glClearColor(.1f, .2f, .3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glfwSwapBuffers(window.window());
+        vao.bind();
+        shader.use();
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        window.swapBuffers();
+        window.pollEvents();
     }
 
     return 0;
