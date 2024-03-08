@@ -5,7 +5,7 @@
 
 #include "texture.h"
 
-class TextureStorage : Texture
+class TextureStorage : public Texture
 {
 public:
     TextureStorage(GLuint width, GLuint height, GLuint levels, GLenum type);
