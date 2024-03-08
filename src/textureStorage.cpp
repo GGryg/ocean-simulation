@@ -4,6 +4,6 @@ TextureStorage::TextureStorage(GLuint width, GLuint height, GLuint levels, GLenu
     : Texture(GL_TEXTURE_2D, width, height)
 {
     bind();
-
-    
+    allocateStorage(levels, GL_RGBA32F);
+    unbind();
 }
