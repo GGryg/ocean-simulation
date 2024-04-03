@@ -1,6 +1,6 @@
 #include "texture.h"
 
-Texture::Texture(GLenum target, GLuint width, GLuint height, GLuint internalFormat, GLuint imageFormat, GLuint wrapS, GLuint wrapT, GLuint filterMin, GLuint filterMax)
+Texture::Texture(GLenum target, GLuint width, GLuint height, GLuint internalFormat, GLuint imageFormat)
     : m_target(target)
     , m_width(width)
     , m_height(height)
@@ -12,8 +12,8 @@ Texture::Texture(GLenum target, GLuint width, GLuint height, GLuint internalForm
 
 Texture::Texture(GLenum target, GLuint width, GLuint height)
     : m_target(target)
-    , width(width)
-    , height(height)
+    , m_width(width)
+    , m_height(height)
 {
     generate();
 }
@@ -60,7 +60,7 @@ void Texture::trilinearFilter()
 void Texture::clampToBorder()
 {
     glTexParameteri(m_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(m_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER)
+    glTexParameteri(m_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 }
 
 void Texture::clampToEdge()
