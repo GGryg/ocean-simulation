@@ -15,7 +15,7 @@ public:
 
     unsigned int reverseBits(unsigned int i);
     std::complex<float> calculateTwiddleFactor(unsigned int x, unsigned int _N);
-    void (VecCompf& input, VecCompf& output, int stride, int offset);
+    void fft(VecCompf& input, VecCompf& output, int stride, int offset);
 
 private:
     unsigned int m_N{};
