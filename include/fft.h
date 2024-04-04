@@ -13,18 +13,18 @@ public:
     FFT(unsigned int N_t);
     ~FFT();
 
-    unsigned int reverse(unsigned int i);
-    std::complex<float> t(unsigned int x, unsigned int _N);
-    void fft(VecCompf& input, VecCompf& output, int stride, int offset);
+    unsigned int reverseBits(unsigned int i);
+    std::complex<float> calculateTwiddleFactor(unsigned int x, unsigned int _N);
+    void (VecCompf& input, VecCompf& output, int stride, int offset);
 
 private:
     unsigned int m_N{};
-    unsigned int m_index;
     unsigned int m_log_2_N;
 
-    std::vector<unsigned int> m_reversed;
-    GridT m_T;
-    VecCompf m_c[2];
+    std::vector<unsigned int> m_reversedIndices;
+    GridT m_twiddleFactors;
+    VecCompf m_temporaryBuffers[2];
+    unsigned int m_bufferIndex;
 };
 
 #endif
