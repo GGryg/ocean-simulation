@@ -7,12 +7,10 @@
 FFT::FFT(unsigned int N_t)
     : m_N{N_t}
     , m_bufferIndex{}
+    , m_log_2_N{static_cast<const unsigned int>(std::log(m_N))} // Precalculate size of indices
 {
-    // Precalculate size of indices
-    m_log_2_N = std::log2(m_N);
-
     // Reverse bits in the indices
-    for(int i = 0; i < N; i++)
+    for(int i = 0; i < m_N; i++)
     {
         m_reversedIndices.push_back(reverseBits(i));
     }
@@ -25,7 +23,7 @@ FFT::FFT(unsigned int N_t)
         m_twiddleFactors.push_back(std::vector<std::complex<float>>(helper));
         for(int j = 0; j < helper; j++)
         {
-            m_twiddleFactors[i][j] = t(j, helper * 2);
+            m_twiddleFactors[i][j] = calculateTwiddleFactor(j, helper * 2);
         }
         helper *= 2;
     }
@@ -51,7 +49,7 @@ unsigned int FFT::reverseBits(unsigned int n)
     return result;
 }
 
-unsigned int FFT::calculateTwiddleFactor(unsigned int x, unsigned int N)
+std::complex<float> FFT::calculateTwiddleFactor(unsigned int x, unsigned int N)
 {
     return std::polar(1.0f, constants::pi2 * x / N);
 }
@@ -70,7 +68,7 @@ void FFT::fft(VecCompf& data, int stride, int offset)
     // "Butterfly" operations
     for(int i = 1; i <= m_log_2_N; i++)
     {
-        m_bufferIndex =^ 1;
+        m_bufferIndex ^= 1;
         for(int j = 0; j < loops; j++)
         {
             // Xk = Ek + e ^ ((-2PIi/N)*k) * Ok

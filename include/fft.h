@@ -19,7 +19,7 @@ public:
 
 private:
     unsigned int m_N{};
-    unsigned int m_log_2_N;
+    const unsigned int m_log_2_N;
 
     std::vector<unsigned int> m_reversedIndices;
     GridT m_twiddleFactors;

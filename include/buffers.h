@@ -9,7 +9,8 @@
 class VBuffer
 {
 public:
-    VBuffer(const void* data, std::size_t size);
+    VBuffer();
+    VBuffer(const void* data, std::size_t size, GLenum type);
     ~VBuffer();
 
     void bind() const;
