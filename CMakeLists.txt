@@ -9,6 +9,8 @@ set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "")
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "")
 add_subdirectory(libs/glfw)
 
+add_subdirectory(libs/glm)
+
 include_directories(SYSTEM "libs/glad/include")
 include_directories(SYSTEM "include")
 
@@ -20,10 +22,12 @@ add_executable(${CMAKE_PROJECT_NAME}
                                     "src/buffers.cpp"
                                     "src/resourceManager.cpp"
                                     "src/shader.cpp"
+                                    "src/ocean.cpp"
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
                                     glfw
+                                    glm
 )
 
 add_custom_command(
