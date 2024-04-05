@@ -14,11 +14,11 @@ GLuint getSizeOfElement(const VBufferElement& element)
     return 0;
 }
 
-VBuffer::VBuffer(const void* data, std::size_t size)
+VBuffer::VBuffer(const void* data, std::size_t size, GLenum type)
 {
     glGenBuffers(1, &m_id);
     bind();
-    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, size, data, type);
 }
 
 VBuffer::~VBuffer()
