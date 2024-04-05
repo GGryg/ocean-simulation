@@ -16,7 +16,7 @@ GLuint getSizeOfElement(const VBufferElement& element)
 
 VBuffer::VBuffer()
 {
-    
+
 }
 
 VBuffer::VBuffer(const void* data, std::size_t size, GLenum type)
@@ -74,4 +74,31 @@ void VArray::bind() const
 void VArray::unbind() const
 {
     glBindVertexArray(0);
+}
+
+EBuffer::EBuffer()
+{
+    
+}
+
+EBuffer::EBuffer(const GLuint* data, std::size_t count, GLenum type)
+{
+    glGenBuffers(1, &m_id);
+    bind();
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), data, type);
+}
+
+EBuffer::~EBuffer()
+{
+    glDeleteBuffers(1, &m_id);
+}
+
+void EBuffer::bind() const
+{
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
+}
+
+void EBuffer::unbind() const
+{
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }

@@ -86,4 +86,18 @@ private:
     GLuint m_id;
 };
 
+// Class abstracting element buffer
+class EBuffer
+{
+    EBuffer();
+    EBuffer(const GLuint* data, std::size_t count, GLenum type);
+    ~EBuffer();
+
+    void bind() const;
+    void unbind() const;
+
+private:
+    GLuint m_id;
+};
+
 #endif
