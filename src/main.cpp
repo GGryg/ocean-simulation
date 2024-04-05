@@ -37,10 +37,11 @@ int main()
     glEnable(GL_DEPTH);
 
     VArray vao;
-    VBuffer vbo{positions.data(), positions.size() * sizeof(GLfloat)};
+    VBuffer vbo{positions.data(), positions.size() * sizeof(GLfloat), GL_STATIC_DRAW};
     VBufferLayout layout;
-    layout.addElement<GLfloat>(3);
-    layout.addElement<GLfloat>(3);
+    layout.addElement<GLfloat>(3); // vertex position
+    layout.addElement<GLfloat>(3); // normal position
+    layout.addElement<GLfloat>(3); // texture position
     vao.addBuffer(vbo, layout);
     
     Shader shader = ResourceManager::get().loadShader("basic", "shaders/triangle/vert.vs", "shaders/triangle/frag.fs");
