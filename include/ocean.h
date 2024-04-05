@@ -59,7 +59,7 @@ private:
     std::vector<OceanVertexHelper> m_verticesHelper;
     VArray m_vao;
     VBuffer m_vbo;
-    // Create EBO
+    EBuffer m_ebo;
 
     Shader m_shader;
 };

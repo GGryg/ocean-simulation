@@ -3,7 +3,7 @@
 
 #include <glad/gl.h>
 #include <string>
-
+#include <glm.hpp>
 enum class ShaderType
 {
     normal,
@@ -24,6 +24,8 @@ public:
     Shader() {}
 
     void use() const;
+
+    void setMat4(const std::string &name, const glm::mat4 &mat) const;
 
 private:
     GLuint compile(const std::string& source, GLenum type);
