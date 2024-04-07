@@ -8,48 +8,13 @@ void error_callback(int error, const char* description)
     Logger::get().log(description, true);
 }
 
-GLenum glChcekError_(const char* file, int line)
-{
-    GLenum errorCode;
-    while((errorCode = glGetError()) != GL_NO_ERROR)
-    {
-        std::string error;
-        switch (errorCode)
-        {
-        case GL_INVALID_ENUM:
-            error = "INVALID ENUM";
-            break;
-        case GL_INVALID_VALUE:
-            error = "INVALID VALUE";
-            break;
-        case GL_INVALID_OPERATION:
-            error = "INVALID OPERATION";
-            break;
-        case GL_STACK_OVERFLOW:
-            error = "STACK OVERFLOW";
-            break;
-        case GL_STACK_UNDERFLOW:
-            error = "STACK UNDERFLOW";
-            break;
-        case GL_OUT_OF_MEMORY:
-            error = "OUT OF MEMORY";
-            break;
-        case GL_INVALID_FRAMEBUFFER_OPERATION:
-            error = "INVALID FRRAME BUFFER OPERATION";
-            break;
-        }
-        std::cout << error << " | " << file << " (" << line << ")" << '\n';
-    }
-    return errorCode;
-}
-#define glCheckError() glCheckError_(__FILE__, __LINE__);
-
 void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char* message, const void* userParam)
 {
-    if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
 
-        std::cout << "---------------" << std::endl;
-    std::cout << "Debug message (" << id << "): " <<  message << std::endl;
+    if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
+    Logger::get().log("OPENGL ERROR: ", true);
+    std::cout << "---------------" << '\n';
+    std::cout << "Debug message (" << id << "): " <<  message << '\n';
 
     switch (source)
     {
@@ -59,7 +24,8 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum 
         case GL_DEBUG_SOURCE_THIRD_PARTY:     std::cout << "Source: Third Party"; break;
         case GL_DEBUG_SOURCE_APPLICATION:     std::cout << "Source: Application"; break;
         case GL_DEBUG_SOURCE_OTHER:           std::cout << "Source: Other"; break;
-    } std::cout << std::endl;
+    }
+    std::cout << '\n';
 
     switch (type)
     {
@@ -72,7 +38,8 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum 
         case GL_DEBUG_TYPE_PUSH_GROUP:          std::cout << "Type: Push Group"; break;
         case GL_DEBUG_TYPE_POP_GROUP:           std::cout << "Type: Pop Group"; break;
         case GL_DEBUG_TYPE_OTHER:               std::cout << "Type: Other"; break;
-    } std::cout << std::endl;
+    } 
+    std::cout << '\n';
     
     switch (severity)
     {
@@ -80,8 +47,8 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum 
         case GL_DEBUG_SEVERITY_MEDIUM:       std::cout << "Severity: medium"; break;
         case GL_DEBUG_SEVERITY_LOW:          std::cout << "Severity: low"; break;
         case GL_DEBUG_SEVERITY_NOTIFICATION: std::cout << "Severity: notification"; break;
-    } std::cout << std::endl;
-    std::cout << std::endl;
+    }
+    std::cout << '\n';
 }
 
 Window::Window(int width, int height, const std::string& title)
