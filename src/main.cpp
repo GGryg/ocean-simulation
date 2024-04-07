@@ -13,7 +13,6 @@
 #include "window.h"
 #include "buffers.h"
 #include "ocean.h"
-#include "buffers.h"
 
 void processInput(Window& window)
 {
