@@ -2,10 +2,14 @@
 #include "resourceManager.h"
 #include "constants.h"
 
-Ocean::Ocean(int N_t, float amplitude_t, glm::vec2 windDirection_t, float length_t)
+#include <cstddef>
+#include <iostream>
+
+Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t)
     : m_N{N_t}
     , m_N1{N_t + 1}
     , m_amplitude{amplitude_t}
+    , m_windSpeed{windSpeed_t}
     , m_windDirection{windDirection_t}
     , m_length{length_t}
     , m_fft{static_cast<unsigned int>(m_N)}
@@ -16,16 +20,23 @@ Ocean::Ocean(int N_t, float amplitude_t, glm::vec2 windDirection_t, float length
     h_tilde_dx = VecCompf(m_N * m_N);
     h_tilde_dz = VecCompf(m_N * m_N);
 
-    m_shader = ResourceManager::get().loadShader("ocean", "shaders/ocean.vs", "shaders/ocean.fs");
-
+    //m_shader = ResourceManager::get().loadShader("ocean", "shaders/ocean.vs", "shaders/ocean.fs");
+    //m_shader.use();
     generateMesh();
 
-    m_vbo = VBuffer{m_vertices.data(), m_vertices.size() * sizeof(OceanVertex), GL_STATIC_DRAW};
-    m_ebo = EBuffer{m_indices.data(), m_indices.size() * sizeof(GLuint), GL_STATIC_DRAW};
-    VBufferLayout layout;
-    layout.addElement<GLfloat>(3);
-    layout.addElement<GLfloat>(3);
-    m_vao.addBuffer(m_vbo, layout);
+    //m_vao.bind();
+    //m_vbo.addData(m_vertices.data(), m_vertices.size() * sizeof(OceanVertex), GL_STATIC_DRAW);
+    //VBufferLayout layout;
+    //layout.addElement<GLfloat>(3);
+    //layout.addElement<GLfloat>(2);
+    //m_vao.bind();
+    //m_vbo.bind();
+    //glEnableVertexAttribArray(0);
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(OceanVertex), (void*)0);
+    //glEnableVertexAttribArray(1);
+    //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(OceanVertex), (void*)sizeof(glm::vec3));
+    //m_ebo = EBuffer{m_indices.data(), m_indices.size(), GL_STATIC_DRAW};
+
 }
 
 Ocean::~Ocean()
@@ -40,9 +51,9 @@ void Ocean::generateMesh()
     const int half = constants::gridSize / 2;
 
     // vertices
-    for(int x = -half; x <= half; ++x)
+    for(int y = -half; y <= half; ++y)
     {
-        for(int y = -half; y <= half; ++y)
+        for(int x = -half; x <= half; ++x)
         {
             float texU = ((x + half) / static_cast<float>(constants::gridSize)) * constants::gridUVSize;
             float texV = ((y + half) / static_cast<float>(constants::gridSize)) * constants::gridUVSize;
@@ -52,9 +63,9 @@ void Ocean::generateMesh()
     }
 
     // indices
-    for(int i = 0; i < constants::gridSize; ++i)
+    for(int i = 0; i < constants::gridSize; i++)
     {
-        for(int j = 0; j < constants::gridSize; ++j)
+        for(int j = 0; j < constants::gridSize; j++)
         {
             std::size_t idx0 = constants::gridSizeP1 * i + j;
             std::size_t idx1 = constants::gridSizeP1 * (i + 1) + j;
@@ -70,7 +81,7 @@ void Ocean::generateMesh()
             m_indices.push_back(idx4);
             m_indices.push_back(idx5);
         }
-    }
+    }    
 }
 
 float Ocean::phillipsSepctrum(int n, int m)

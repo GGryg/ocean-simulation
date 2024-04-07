@@ -26,7 +26,7 @@ struct OceanVertexHelper
 class Ocean
 {
 public:
-    Ocean(int N_t, float amplitude_t, glm::vec2 windDirection_t, float length_t);
+    Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t);
     ~Ocean();
 
     float phillipsSepctrum(int n, int m);
@@ -37,12 +37,13 @@ public:
     void waving(float t); // update
     void draw(float t, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model);
 
-private:
+public:
     void generateMesh();
 
     int m_N{};
     int m_N1{};
     float m_amplitude{};
+    float m_windSpeed;
     glm::vec2 m_windDirection{};
     float m_length;
 
@@ -57,11 +58,9 @@ private:
     std::vector<OceanVertex> m_vertices;
     std::vector<GLuint> m_indices;
     std::vector<OceanVertexHelper> m_verticesHelper;
-    VArray m_vao;
-    VBuffer m_vbo;
-    EBuffer m_ebo;
-
-    Shader m_shader;
+    //VArray m_vao;
+    //VBuffer m_vbo;
+    //EBuffer m_ebo;
 };
 
 #endif

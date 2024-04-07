@@ -3,7 +3,8 @@
 
 #include <glad/gl.h>
 #include <string>
-#include <glm.hpp>
+#include <glm/glm.hpp>
+
 enum class ShaderType
 {
     normal,

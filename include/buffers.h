@@ -16,6 +16,8 @@ public:
     void bind() const;
     void unbind() const;
 
+    void addData(const void* data, std::size_t size, GLenum type);
+
 private:
     GLuint m_id;
 };
@@ -89,6 +91,7 @@ private:
 // Class abstracting element buffer
 class EBuffer
 {
+public:
     EBuffer();
     EBuffer(const GLuint* data, std::size_t count, GLenum type);
     ~EBuffer();
@@ -96,8 +99,14 @@ class EBuffer
     void bind() const;
     void unbind() const;
 
+    inline GLuint count() const
+    {
+        return m_count;
+    }
+
 private:
     GLuint m_id;
+    GLuint m_count;
 };
 
 #endif
