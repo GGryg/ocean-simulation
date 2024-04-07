@@ -9,7 +9,7 @@ Camera::Camera(glm::vec3 position_t, glm::vec3 worldUp_t, float yaw_t, float pit
     , yaw{yaw_t}
     , pitch{pitch_t}
     , movementSpeed{2.0f}
-    , mouseSensitivity{0.5f}
+    , mouseSensitivity{0.025f}
 {
     updateVectors();
 }
