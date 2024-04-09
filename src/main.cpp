@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 #include <vector>
 #include <cstddef>
 
@@ -10,7 +11,7 @@
 
 #include "camera.h"
 #include "logger.h"
-#include "resourceManager.h"
+#include "resourceLoader.h"
 #include "window.h"
 #include "buffers.h"
 #include "ocean.h"
@@ -73,16 +74,16 @@ int main()
          0.5f, -0.5f, 0.0f,     0.3f, 0.6f, 0.9f, // bottom right
     };
     */
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glDisable(GL_BLEND);
+    //glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_CULL_FACE);
+    //glDisable(GL_BLEND);
 
     
-    Shader shader = ResourceManager::get().loadShader("ocean", "shaders/ocean.vs", "shaders/ocean.fs");
-    shader.use();
+    //Shader shader = ResourceLoader::get().loadShader("shaders/ocean.vs", "shaders/ocean.fs");
+    //shader.use();
     
-    VArray vao;
-    VBuffer vbo;
+    //VArray vao;
+    //VBuffer vbo;
     /*
     VBuffer vbo{positions.data(), positions.size() * sizeof(GLfloat), GL_STATIC_DRAW};
     VBufferLayout layout;
@@ -100,28 +101,57 @@ int main()
     constexpr float windSpeed = 32.0f;
     constexpr float length = 64;
 
-    Ocean ocean{N, amplitute, windSpeed, glm::vec2{1.0f, 1.0f}, length};
+    //Ocean ocean{N, amplitute, windSpeed, glm::vec2{1.0f, 1.0f}, length};
 
 
 
-    vao.bind();
-    vbo.addData(ocean.m_vertices.data(), ocean.m_vertices.size() * sizeof(OceanVertex), GL_STATIC_DRAW);
+    //vao.bind();
+    //vbo.addData(ocean.m_vertices.data(), ocean.m_vertices.size() * sizeof(OceanVertex), GL_STATIC_DRAW);
     //VBufferLayout layout;
     //layout.addElement<GLfloat>(3);
     //layout.addElement<GLfloat>(2);
     //m_vao.bind();
     //vbo.bind();
-    VBufferLayout elements;
-    elements.emplace_back(3, GL_FLOAT, GL_FALSE, offsetof(OceanVertex, vertexPosition));
-    elements.emplace_back(2, GL_FLOAT, GL_FALSE, offsetof(OceanVertex, texCoord));
+    //VBufferLayout elements;
+    //elements.emplace_back(3, GL_FLOAT, GL_FALSE, offsetof(OceanVertex, vertexPosition));
+    //elements.emplace_back(2, GL_FLOAT, GL_FALSE, offsetof(OceanVertex, texCoord));
     //glEnableVertexAttribArray(0);
     //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(OceanVertex), (void*)0);
     //glEnableVertexAttribArray(1);
     //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(OceanVertex), (void*)sizeof(glm::vec3));
-    vao.addBuffer(vbo, sizeof(OceanVertex), elements);
-    EBuffer ebo = EBuffer{ocean.m_indices.data(), ocean.m_indices.size(), GL_STATIC_DRAW};
+    //vao.addBuffer(vbo, sizeof(OceanVertex), elements);
+    //EBuffer ebo = EBuffer{ocean.m_indices.data(), ocean.m_indices.size(), GL_STATIC_DRAW};
 
+    Shader tShader = ResourceLoader::get().loadShader("shaders/testTex.vs", "shaders/testTex.fs");
 
+    float v[] = {
+         0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
+         0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // top left 
+    };
+
+    GLuint in[] = {
+        0, 1, 3,
+        1, 2, 3
+    };
+    tShader.use();
+    VArray va;
+    VBuffer vb;
+    va.bind();
+    vb.addData(v, sizeof(v), GL_STATIC_DRAW);
+    VBufferLayout e;
+    e.emplace_back(3, GL_FLOAT, GL_FALSE, 0);
+    e.emplace_back(2, GL_FLOAT, GL_FALSE, 3*sizeof(float));
+    va.addBuffer(vb, 5 * sizeof(float), e);
+    EBuffer eb = EBuffer{in, std::size(in), GL_STATIC_DRAW};
+
+    std::unique_ptr<Texture> testTex = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise0.png", false));
+    testTex->bind(0);
+    testTex->clampToEdge();
+    testTex->neareastFilter();
+    tShader.use();
+    tShader.setInt("texture1", 0);
 
     while(window.isOpen())
     {
@@ -137,6 +167,7 @@ int main()
         //vao.bind();
         //shader.use();
         //glDrawArrays(GL_TRIANGLES, 0, 6);
+        /*
         shader.use();
 
         vao.bind();
@@ -154,7 +185,11 @@ int main()
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawElements(GL_TRIANGLES, ebo.count(), GL_UNSIGNED_INT, nullptr);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+        */
+        tShader.use();
+        testTex->bind(0);
+        va.bind();
+        glDrawElements(GL_TRIANGLES, eb.count(), GL_UNSIGNED_INT, nullptr);
 
         window.swapBuffers();
         window.pollEvents();
