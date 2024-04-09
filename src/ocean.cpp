@@ -1,5 +1,5 @@
 #include "ocean.h"
-#include "resourceManager.h"
+#include "resourceLoader.h"
 #include "constants.h"
 
 #include <cstddef>

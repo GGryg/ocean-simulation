@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 3.27)
 
 project(OceanSimulation)
 set(CMAKE_CXX_STANDARD 20)
@@ -23,12 +23,12 @@ add_executable(${CMAKE_PROJECT_NAME}
                                     "src/logger/logger.cpp"
                                     "src/window.cpp"
                                     "src/buffers.cpp"
-                                    "src/resourceManager.cpp"
+                                    "src/resourceLoader.cpp"
                                     "src/shader.cpp"
                                     "src/ocean.cpp"
                                     "src/fft.cpp"
                                     "src/camera.cpp"
-                                    "src/stb.cpp"
+                                    "src/texture.cpp"
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
@@ -41,4 +41,11 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/shaders
             ${CMAKE_BINARY_DIR}/shaders
+)
+
+add_custom_command(
+    TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/resources
+            ${CMAKE_BINARY_DIR}/resources
 )
