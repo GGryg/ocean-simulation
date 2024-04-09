@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <cstddef>
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
@@ -22,7 +23,7 @@ void processInput(Window& window)
     }
 }
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+Camera camera(glm::vec3(0.0f, 12.0f, 30.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 float lastX;
 float lastY;
 bool firstMouse{true};
@@ -53,8 +54,8 @@ void mosueCallback(GLFWwindow* window, double xPosIn, double yPosIn)
 
 int main()
 {
-    const GLuint width = 800;
-    const GLuint height = 600;
+    const GLuint width = 1280;
+    const GLuint height = 720;
 
     Window window{width, height, "Ocean Simulation"};
     glfwSetCursorPosCallback(window.window(), mosueCallback);
@@ -109,11 +110,15 @@ int main()
     //layout.addElement<GLfloat>(3);
     //layout.addElement<GLfloat>(2);
     //m_vao.bind();
-    vbo.bind();
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(OceanVertex), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(OceanVertex), (void*)sizeof(glm::vec3));
+    //vbo.bind();
+    VBufferLayout elements;
+    elements.emplace_back(3, GL_FLOAT, GL_FALSE, offsetof(OceanVertex, vertexPosition));
+    elements.emplace_back(2, GL_FLOAT, GL_FALSE, offsetof(OceanVertex, texCoord));
+    //glEnableVertexAttribArray(0);
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(OceanVertex), (void*)0);
+    //glEnableVertexAttribArray(1);
+    //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(OceanVertex), (void*)sizeof(glm::vec3));
+    vao.addBuffer(vbo, sizeof(OceanVertex), elements);
     EBuffer ebo = EBuffer{ocean.m_indices.data(), ocean.m_indices.size(), GL_STATIC_DRAW};
 
 

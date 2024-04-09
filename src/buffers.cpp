@@ -57,18 +57,15 @@ VArray::~VArray()
     glDeleteVertexArrays(1, &m_id);
 }
 
-void VArray::addBuffer(const VBuffer& vb, const VBufferLayout& layout)
+void VArray::addBuffer(const VBuffer& vb, std::size_t stride, const VBufferLayout& elements)
 {
     bind();
     vb.bind();
-    GLuint offset{};
-    const std::vector<VBufferElement> elements = layout.elements();
     for(GLuint i = 0; i < elements.size(); ++i)
     {
         const VBufferElement element = elements[i];
         glEnableVertexAttribArray(i);
-        glVertexAttribPointer(i, element.count, element.type, GL_FALSE, layout.stride(), (const void*)offset);
-        offset += getSizeOfElement(element);
+        glVertexAttribPointer(i, element.count, element.type, GL_FALSE, stride, (const void*)(element.offset));
     }
 }
 
