@@ -1,19 +1,22 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
+#include <string>
+
 #include <glad/gl.h>
 
 class Texture
 {
 public:
-    Texture(GLenum target, GLuint width, GLuint height, GLuint internalFormat, GLuint imageFormat);
+    Texture(GLenum target, GLuint width, GLuint height, GLenum internalFormat, GLenum imageFormat);
+    Texture(GLenum target, GLuint width, GLuint height, GLuint nrChannels, GLenum internalFormat, GLenum imageFormat);
     Texture(GLenum target, GLuint width, GLuint height);
     ~Texture();
 
-    void generate();
+    void generate(unsigned char* data);
 
-    void bind();
-    void unbind();
+    void bind(GLuint unit);
+    void unbind(GLuint unit);
 
     void neareastFilter();
     void bilinearFilter();
@@ -33,8 +36,9 @@ private:
     GLenum m_target;
     GLuint m_width{};
     GLuint m_height{};
-    GLuint m_internalFormat;
-    GLuint m_imageFormat;
-}
+    GLuint m_nrChannels;
+    GLenum m_internalFormat;
+    GLenum m_imageFormat;
+};
 
 #endif

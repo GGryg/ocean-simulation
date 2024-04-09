@@ -1,21 +1,33 @@
 #include "texture.h"
 
-Texture::Texture(GLenum target, GLuint width, GLuint height, GLuint internalFormat, GLuint imageFormat)
+Texture::Texture(GLenum target, GLuint width, GLuint height, GLenum internalFormat, GLenum imageFormat)
     : m_target(target)
     , m_width(width)
     , m_height(height)
     , m_internalFormat(internalFormat)
     , m_imageFormat(imageFormat)
 {
-    generate();
+    glGenTextures(1, &m_id);
 }
+
+Texture::Texture(GLenum target, GLuint width, GLuint height, GLuint nrChannels, GLenum internalFormat, GLenum imageFormat)
+    : m_target(target)
+    , m_width(width)
+    , m_height(height)
+    , m_nrChannels(nrChannels)
+    , m_internalFormat(internalFormat)
+    , m_imageFormat(imageFormat)
+{
+    glGenTextures(1, &m_id);
+}
+
 
 Texture::Texture(GLenum target, GLuint width, GLuint height)
     : m_target(target)
     , m_width(width)
     , m_height(height)
 {
-    generate();
+    glGenTextures(1, &m_id);
 }
 
 Texture::~Texture()
@@ -23,18 +35,22 @@ Texture::~Texture()
     glDeleteTextures(1, &m_id);
 }
 
-void Texture::generate()
+void Texture::generate(unsigned char* data)
 {
-    glGenTextures(1, &m_id);
+    glBindTexture(m_target, m_id);
+    glTexImage2D(m_target, 0, m_internalFormat, m_width, m_height, 0, m_imageFormat, GL_UNSIGNED_BYTE, data);
+    glBindTexture(m_target, 0);
 }
 
-void Texture::bind()
+void Texture::bind(GLuint unit)
 {
+    glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(m_target, m_id);
 }
 
-void Texture::unbind()
+void Texture::unbind(GLuint unit)
 {
+    glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(m_target, 0);
 }
 
