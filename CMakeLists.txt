@@ -11,8 +11,11 @@ add_subdirectory(libs/glfw)
 
 add_subdirectory(libs/glm)
 
+set(STB_DIRS ${PROJECT_SOURCE_DIR}/libs/stb)
+
 include_directories(SYSTEM "libs/glad/include")
 include_directories(SYSTEM "include")
+include_directories(${STB_DIRS})
 
 add_executable(${CMAKE_PROJECT_NAME}
                                     "src/main.cpp"
@@ -25,6 +28,7 @@ add_executable(${CMAKE_PROJECT_NAME}
                                     "src/ocean.cpp"
                                     "src/fft.cpp"
                                     "src/camera.cpp"
+                                    "src/stb.cpp"
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
