@@ -42,15 +42,25 @@ void Texture::generate(unsigned char* data)
     glBindTexture(m_target, 0);
 }
 
-void Texture::bind(GLuint unit)
+void Texture::bindActive(GLuint unit)
 {
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(m_target, m_id);
 }
 
-void Texture::unbind(GLuint unit)
+void Texture::bind()
+{
+    glBindTexture(m_target, m_id);
+}
+
+void Texture::unbindActive(GLuint unit)
 {
     glActiveTexture(GL_TEXTURE0 + unit);
+    glBindTexture(m_target, 0);
+}
+
+void Texture::unbind()
+{
     glBindTexture(m_target, 0);
 }
 

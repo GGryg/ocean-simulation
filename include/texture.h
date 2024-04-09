@@ -15,8 +15,10 @@ public:
 
     void generate(unsigned char* data);
 
-    void bind(GLuint unit);
-    void unbind(GLuint unit);
+    void bindActive(GLuint unit);
+    void bind();
+    void unbindActive(GLuint unit);
+    void unbind();
 
     void neareastFilter();
     void bilinearFilter();
