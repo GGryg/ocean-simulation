@@ -41,7 +41,7 @@ public:
     VArray();
     ~VArray();
 
-    void addBuffer(const VBuffer& vb, std::size_t size, const VBufferLayout& layout);
+    void addBuffer(const VBuffer* vb, std::size_t size, const VBufferLayout& layout);
     void bind() const;
     void unbind() const;
 

@@ -2,6 +2,7 @@
 #define OCEAN_H
 
 #include <complex>
+#include <memory>
 
 #include <glm/glm.hpp>
 #include <GLAD/gl.h>
@@ -34,8 +35,8 @@ public:
     std::complex<float> hTilde0(int n, int m);
     std::complex<float> hTilde(float t, int n, int m);
 
-    void waving(float t); // update
-    void draw(float t, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model);
+    void waving(float deltaTime); // update
+    void draw(float deltaTime, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model);
 
 public:
     void generateMesh();
@@ -58,9 +59,9 @@ public:
     std::vector<OceanVertex> m_vertices;
     std::vector<GLuint> m_indices;
     std::vector<OceanVertexHelper> m_verticesHelper;
-    //VArray m_vao;
-    //VBuffer m_vbo;
-    //EBuffer m_ebo;
+    std::unique_ptr<VArray> m_vao;
+    std::unique_ptr<VBuffer> m_vbo;
+    std::unique_ptr<EBuffer> m_ebo;
 };
 
 #endif

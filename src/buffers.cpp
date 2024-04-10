@@ -57,10 +57,10 @@ VArray::~VArray()
     glDeleteVertexArrays(1, &m_id);
 }
 
-void VArray::addBuffer(const VBuffer& vb, std::size_t stride, const VBufferLayout& elements)
+void VArray::addBuffer(const VBuffer* vb, std::size_t stride, const VBufferLayout& elements)
 {
     bind();
-    vb.bind();
+    vb->bind();
     for(GLuint i = 0; i < elements.size(); ++i)
     {
         const VBufferElement element = elements[i];

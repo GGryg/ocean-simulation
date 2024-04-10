@@ -37,6 +37,15 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(OceanVertex), (void*)sizeof(glm::vec3));
     //m_ebo = EBuffer{m_indices.data(), m_indices.size(), GL_STATIC_DRAW};
 
+    m_vao = std::make_unique<VArray>();
+    m_vao->bind();
+    m_vbo = std::make_unique<VBuffer>(m_vertices.data(), m_vertices.size() * sizeof(OceanVertex), GL_STATIC_DRAW);
+    VBufferLayout elements;
+    elements.emplace_back(3, GL_FLOAT, GL_FALSE, offsetof(OceanVertex, vertexPosition));
+    elements.emplace_back(2, GL_FLOAT, GL_FALSE, offsetof(OceanVertex, texCoord));
+    m_vao->addBuffer(m_vbo.get(), sizeof(OceanVertex), elements);
+    m_ebo = std::make_unique<EBuffer>(m_indices.data(), m_indices.size(), GL_STATIC_DRAW);
+
 }
 
 Ocean::~Ocean()
@@ -51,14 +60,14 @@ void Ocean::generateMesh()
     const int half = constants::gridSize / 2;
 
     // vertices
-    for(int y = -half; y <= half; ++y)
+    for(int z = -half; z <= half; ++z)
     {
         for(int x = -half; x <= half; ++x)
         {
             float texU = ((x + half) / static_cast<float>(constants::gridSize)) * constants::gridUVSize;
-            float texV = ((y + half) / static_cast<float>(constants::gridSize)) * constants::gridUVSize;
+            float texV = ((z + half) / static_cast<float>(constants::gridSize)) * constants::gridUVSize;
 
-            m_vertices.emplace_back(glm::vec3(static_cast<float>(x), 0.0f, static_cast<float>(y)), glm::vec2(texU, texV));
+            m_vertices.emplace_back(glm::vec3(static_cast<float>(x), 0.0f, static_cast<float>(z)), glm::vec2(texU, texV));
         }
     }
 
@@ -99,4 +108,9 @@ float Ocean::phillipsSepctrum(int n, int m)
 std::complex<float> Ocean::hTilde0(int n, int m)
 {
     return std::complex<float>();
+}
+
+void Ocean::draw(float deltaTime, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model)
+{
+    m_vao->bind();
 }
