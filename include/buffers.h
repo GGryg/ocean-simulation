@@ -70,4 +70,18 @@ private:
     GLuint m_count;
 };
 
+class UBuffer
+{
+public:
+    UBuffer();
+    UBuffer(std::size_t size, GLenum type);
+    ~UBuffer();
+
+    void bind() const;
+    void unbind() const;
+
+private:
+    GLuint m_id;
+};
+
 #endif
