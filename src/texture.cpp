@@ -123,3 +123,8 @@ void Texture::allocateStorage(GLuint levels)
 {
     glTexStorage2D(m_target, levels, m_internalFormat, m_width, m_height);
 }
+
+void Texture::texImage2D()
+{
+    glTexImage2D(m_target, 0, m_internalFormat, m_width, m_height, 0, m_imageFormat, GL_FLOAT, NULL);
+}

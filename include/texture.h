@@ -33,6 +33,7 @@ public:
     void activate(GLuint unit);
 
     void allocateStorage(GLuint levels);
+    void texImage2D();
 
 private:
     GLuint m_id;
