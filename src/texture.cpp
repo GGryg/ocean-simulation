@@ -53,6 +53,13 @@ void Texture::bind()
     glBindTexture(m_target, m_id);
 }
 
+void Texture::bindImage(GLuint unit, GLuint levels, GLuint layer, GLenum access)
+{
+    bindActive(unit);
+    glBindImageTexture(unit, m_id, levels, GL_FALSE, 0, access, m_internalFormat);
+}
+
+
 void Texture::unbindActive(GLuint unit)
 {
     glActiveTexture(GL_TEXTURE0 + unit);
@@ -107,9 +114,9 @@ void Texture::mirrorRepeat()
     glTexParameteri(m_target, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 }
 
-void Texture::activate(GLuint index)
+void Texture::activate(GLuint unit)
 {
-    glActiveTexture(GL_TEXTURE0 + index);
+    glActiveTexture(GL_TEXTURE0 + unit);
 }
 
 void Texture::allocateStorage(GLuint levels)

@@ -17,6 +17,7 @@ public:
 
     void bindActive(GLuint unit);
     void bind();
+    void bindImage(GLuint unit, GLuint levels, GLuint layer, GLenum access);
     void unbindActive(GLuint unit);
     void unbind();
 
@@ -29,7 +30,7 @@ public:
     void repeat();
     void mirrorRepeat();
     
-    void activate(GLuint index);
+    void activate(GLuint unit);
 
     void allocateStorage(GLuint levels);
 
