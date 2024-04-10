@@ -12,14 +12,7 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     , m_windSpeed{windSpeed_t}
     , m_windDirection{windDirection_t}
     , m_length{length_t}
-    , m_fft{static_cast<unsigned int>(m_N)}
 {
-    h_tilde = VecCompf(m_N * m_N);
-    h_tilde_x = VecCompf(m_N * m_N);
-    h_tilde_z = VecCompf(m_N * m_N);
-    h_tilde_dx = VecCompf(m_N * m_N);
-    h_tilde_dz = VecCompf(m_N * m_N);
-
     //m_shader = ResourceManager::get().loadShader("ocean", "shaders/ocean.vs", "shaders/ocean.fs");
     //m_shader.use();
     generateMesh();
@@ -45,6 +38,61 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     elements.emplace_back(2, GL_FLOAT, GL_FALSE, offsetof(OceanVertex, texCoord));
     m_vao->addBuffer(m_vbo.get(), sizeof(OceanVertex), elements);
     m_ebo = std::make_unique<EBuffer>(m_indices.data(), m_indices.size(), GL_STATIC_DRAW);
+
+    m_noise0 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise0.png", true));
+    m_noise0->bind();
+    m_noise0->clampToEdge();
+    m_noise0->neareastFilter();
+    m_noise1 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise1.png", true));
+    m_noise1->bind();
+    m_noise1->clampToEdge();
+    m_noise1->neareastFilter();
+    m_noise2 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise2.png", true));
+    m_noise2->bind();
+    m_noise2->clampToEdge();
+    m_noise2->neareastFilter();
+    m_noise3 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise3.png", true));
+    m_noise3->bind();
+    m_noise3->clampToEdge();
+    m_noise3->neareastFilter();
+
+    m_tilde_h0k = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_tilde_h0k->bind();
+    m_tilde_h0k->clampToEdge();
+    m_tilde_h0k->neareastFilter();
+    m_tilde_h0k->allocateStorage(1);
+    m_tilde_h0minusk = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_tilde_h0minusk->bind();
+    m_tilde_h0minusk->clampToEdge();
+    m_tilde_h0minusk->neareastFilter();
+    m_tilde_h0minusk->allocateStorage(1);
+
+    m_tilde_hkt_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_tilde_hkt_dx->bind();
+    m_tilde_hkt_dx->repeat();
+    m_tilde_hkt_dx->bilinearFilter();
+    m_tilde_hkt_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_tilde_hkt_dy->bind();
+    m_tilde_hkt_dy->repeat();
+    m_tilde_hkt_dy->bilinearFilter();
+    m_tilde_hkt_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_tilde_hkt_dz->bind();
+    m_tilde_hkt_dz->repeat();
+    m_tilde_hkt_dz->bilinearFilter();
+
+    m_twiddleFactors = std::make_unique<Texture>(GL_TEXTURE_2D, log(m_N) / log(2), m_N, GL_RG32F, GL_RGBA);
+    m_twiddleFactors->bind();
+    m_twiddleFactors->clampToEdge();
+    m_twiddleFactors->neareastFilter();
+    m_pingPong = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_normalMap = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_normalMap->bind();
+    m_normalMap->repeat();
+    m_normalMap->bilinearFilter();
+
 
 }
 
@@ -103,11 +151,6 @@ float Ocean::phillipsSepctrum(int n, int m)
     float kLength_4 = kLength_2 * kLength_2;
     // Ph(k) = A * ((exp(-1/(kL)^2))/k^4) * |kconj dot wconj|^2
     return 0.0f;
-}
-
-std::complex<float> Ocean::hTilde0(int n, int m)
-{
-    return std::complex<float>();
 }
 
 void Ocean::draw(float deltaTime, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model)

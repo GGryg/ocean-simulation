@@ -1,15 +1,14 @@
 #ifndef OCEAN_H
 #define OCEAN_H
 
-#include <complex>
 #include <memory>
 
 #include <glm/glm.hpp>
 #include <GLAD/gl.h>
 
-#include "fft.h"
 #include "shader.h"
 #include "buffers.h"
+#include "texture.h"
 
 struct OceanVertex
 {
@@ -17,12 +16,14 @@ struct OceanVertex
     glm::vec2 texCoord; // maybe unused
 };
 
+/*
 struct OceanVertexHelper
 {
     GLfloat h_x, h_y, h_z;
     GLfloat h_conj_x, hconj_y, hconj_z;
     GLfloat ox, oy, oz;
 };
+*/
 
 class Ocean
 {
@@ -32,8 +33,8 @@ public:
 
     float phillipsSepctrum(int n, int m);
 
-    std::complex<float> hTilde0(int n, int m);
-    std::complex<float> hTilde(float t, int n, int m);
+    void h0k(int n, int m);
+    void htk(float t, int n, int m);
 
     void waving(float deltaTime); // update
     void draw(float deltaTime, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model);
@@ -48,17 +49,28 @@ public:
     glm::vec2 m_windDirection{};
     float m_length;
 
-    VecCompf h_tilde;
-    VecCompf h_tilde_x;
-    VecCompf h_tilde_z;
-    VecCompf h_tilde_dx;
-    VecCompf h_tilde_dz;
+    std::unique_ptr<Texture> m_noise0;
+    std::unique_ptr<Texture> m_noise1;
+    std::unique_ptr<Texture> m_noise2;
+    std::unique_ptr<Texture> m_noise3;
 
-    FFT m_fft;
+    std::unique_ptr<Texture> m_tilde_h0k;
+    std::unique_ptr<Texture> m_tilde_h0minusk;
+    std::unique_ptr<Texture> m_tilde_hkt_dx;
+    std::unique_ptr<Texture> m_tilde_hkt_dy;
+    std::unique_ptr<Texture> m_tilde_hkt_dz;
+
+    std::unique_ptr<Texture> m_twiddleFactors;
+    std::unique_ptr<Texture> m_pingPong;
+
+    std::unique_ptr<Texture> m_dx;
+    std::unique_ptr<Texture> m_dy;
+    std::unique_ptr<Texture> m_dz;
+
+    std::unique_ptr<Texture> m_normalMap;
 
     std::vector<OceanVertex> m_vertices;
     std::vector<GLuint> m_indices;
-    std::vector<OceanVertexHelper> m_verticesHelper;
     std::unique_ptr<VArray> m_vao;
     std::unique_ptr<VBuffer> m_vbo;
     std::unique_ptr<EBuffer> m_ebo;
