@@ -21,7 +21,13 @@ Shader::Shader(const std::string& vertexShaderSource, const std::string& framgne
 Shader::Shader(const std::string& computeShaderSource)
     : m_type{ShaderType::compute}
 {
-    //TODO
+    m_id = glCreateProgram();
+    GLuint computeShader = compile(computeShaderSource, GL_COMPUTE_SHADER);
+
+    glAttachShader(m_id, computeShader);
+    glLinkProgram(m_id);
+
+    glDeleteShader(computeShader);
 }
 
 void Shader::use() const
@@ -44,7 +50,7 @@ void Shader::setMat4(const std::string& name, const glm::mat4& mat) const
     glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }
 
-void Shader::setVec2(const std::string& name, const glm::vec2 vec) const
+void Shader::setVec2(const std::string& name, const glm::vec2& vec) const
 {
     glUniform2fv(glGetUniformLocation(m_id, name.c_str()), 1, &vec[0]);
 }
