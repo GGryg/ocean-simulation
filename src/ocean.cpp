@@ -196,6 +196,29 @@ void Ocean::tilde_h0k()
     glFinish();
 }
 
+GLuint Ocean::reverseBits(GLuint n);
+{
+    GLuint result = 0;
+    int numBits = static_cast<int>(std::log(m_N) / std::log(2));
+    for(int i = 0; i < numBits; ++i)
+    {
+        result |= (n & 1) << (numBits - 1 - i);
+        n >>= 1;
+    }
+    return result;
+}
+
+void Ocean::reverseIndices()
+{
+    std::vector<GLuint> indices;
+
+    for(int i = 0; i < m_N; ++i)
+    {
+        indices.push_back(reverseBits(i));
+    }
+
+}
+
 void Ocean::waving(float deltaTime)
 {
     tilde_h0k();

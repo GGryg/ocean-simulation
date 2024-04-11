@@ -34,6 +34,7 @@ public:
     float phillipsSepctrum(int n, int m);
 
     void tilde_h0k();
+    void reverseIndices();
     void tilde_htk(float t, int n, int m);
 
     void waving(float deltaTime); // update
@@ -41,6 +42,7 @@ public:
 
 public:
     void generateMesh();
+    GLuint reverseBits(GLuint n);
 
     int m_N{};
     int m_N1{};
