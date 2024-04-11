@@ -198,7 +198,7 @@ void Ocean::tilde_h0k()
     glFinish();
 }
 
-GLuint Ocean::reverseBits(GLuint n);
+GLuint Ocean::reverseBits(GLuint n)
 {
     GLuint result = 0;
     int numBits = static_cast<int>(std::log(m_N) / std::log(2));
