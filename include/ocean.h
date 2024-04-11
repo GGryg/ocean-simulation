@@ -34,7 +34,6 @@ public:
     float phillipsSepctrum(int n, int m);
 
     void tilde_h0k();
-    void reverseIndices();
     void tilde_htk(float t, int n, int m);
 
     void waving(float deltaTime); // update
@@ -42,6 +41,7 @@ public:
 
 public:
     void generateMesh();
+    void reverseIndices();
     GLuint reverseBits(GLuint n);
 
     int m_N{};
@@ -78,6 +78,7 @@ public:
     std::unique_ptr<VArray> m_vao;
     std::unique_ptr<VBuffer> m_vbo;
     std::unique_ptr<EBuffer> m_ebo;
+    std::unique_ptr<SSBuffer> m_ssbo;
 };
 
 #endif

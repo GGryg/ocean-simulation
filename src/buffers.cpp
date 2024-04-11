@@ -133,3 +133,36 @@ void UBuffer::unbind() const
 {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
+
+SSBuffer::SSBuffer()
+{
+    glGenBuffers(1, &m_id);
+}
+
+SSBuffer::SSBuffer(const void* data, std::size_t size, GLenum type)
+{
+    glGenBuffers(1, &m_id);
+    bind();
+    glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, type);
+}
+
+SSBuffer::~SSBuffer()
+{
+    glDeleteBuffers(1, &m_id);
+}
+
+void SSBuffer::bind() const
+{
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_id);
+}
+
+void SSBuffer::unbind() const
+{
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void SSBuffer::addData(const void* data, std::size_t size, GLenum type)
+{
+    bind();
+    glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, type);
+}

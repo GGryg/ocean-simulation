@@ -38,6 +38,8 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     elements.emplace_back(2, GL_FLOAT, GL_FALSE, offsetof(OceanVertex, texCoord));
     m_vao->addBuffer(m_vbo.get(), sizeof(OceanVertex), elements);
     m_ebo = std::make_unique<EBuffer>(m_indices.data(), m_indices.size(), GL_STATIC_DRAW);
+    // initialize ssbo
+    reverseIndices();
 
     m_noise0 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise0.png", false));
     m_noise0->bind();
@@ -216,7 +218,7 @@ void Ocean::reverseIndices()
     {
         indices.push_back(reverseBits(i));
     }
-
+    m_ssbo = std::make_unique<SSBuffer>(indices.data(), indices.size() * sizeof(GLuint), GL_STATIC_DRAW);
 }
 
 void Ocean::waving(float deltaTime)

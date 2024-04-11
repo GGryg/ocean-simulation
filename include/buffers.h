@@ -70,6 +70,7 @@ private:
     GLuint m_count;
 };
 
+// Class abstracting uniform buffer
 class UBuffer
 {
 public:
@@ -83,5 +84,18 @@ public:
 private:
     GLuint m_id;
 };
+
+// Class abstracting shader storage buffer
+class SSBuffer
+{
+    SSBuffer();
+    SSBuffer(const void* data, std::size_t size, GLenum type);
+    ~SSBuffer();
+
+    void bind() const;
+    void unbind() const;
+
+    void addData(const void* data, std::size_t size, GLenum type);
+}
 
 #endif
