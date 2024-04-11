@@ -5,8 +5,8 @@ const float M_PI = 3.1415926535897932384626433832795;
 const float M_GRAVITY = 9.81;
 const float MIN_NOISE_CLAMP = 0.01;
 const float MAX_NOISE_CLAMP = 1.0;
-const float MIN_HEIGHT_CLAMP = 2000.0;
-const float MAX_HEIGHT_CLAMP = -2000.0;
+const float MIN_HEIGHT_CLAMP = -2000.0;
+const float MAX_HEIGHT_CLAMP = 2000.0;
 
 uniform float u_amplitude;
 uniform float u_windSpeed;
