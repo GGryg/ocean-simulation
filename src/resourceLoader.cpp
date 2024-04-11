@@ -2,6 +2,7 @@
 #include "logger.h"
 #include <fstream>
 #include <sstream>
+#include <exception>
 
 #include <glad/gl.h>
 #define STB_IMAGE_IMPLEMENTATION
@@ -23,11 +24,16 @@ Shader ResourceLoader::loadShaderFromFile(const std::string& vertexShaderFile, c
 {
     std::string vertexShaderSource;
     std::string fragmentShaderSource;
+    std::ifstream vertexShaderF;
+    std::ifstream fragmentShaderF;
 
+
+    vertexShaderF.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    fragmentShaderF.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
     {
-        std::ifstream vertexShaderF(vertexShaderFile);
-        std::ifstream fragmentShaderF(fragmentShaderFile);
+        vertexShaderF.open(vertexShaderFile);
+        fragmentShaderF.open(fragmentShaderFile);
         std::stringstream vertexShaderStream;
         std::stringstream fragmnetShaderStream;
 
@@ -52,10 +58,11 @@ Shader ResourceLoader::loadShaderFromFile(const std::string& vertexShaderFile, c
 Shader ResourceLoader::loadComputeShaderFromFile(const std::string& computeShaderFile)
 {
     std::string computeShaderSource;
-
+    std::ifstream computeShaderF(computeShaderFile);
+    computeShaderF.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
     {
-        std::ifstream computeShaderF(computeShaderFile);
+        computeShaderF.open(computeShaderFile);
         std::stringstream computeShaderStream;
 
         computeShaderStream << computeShaderF.rdbuf();
