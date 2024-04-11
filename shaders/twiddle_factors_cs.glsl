@@ -18,7 +18,7 @@ void main()
     int stage = int(x.x);
     int indexInStage = int(x.y);
     float k = mod(indexInStage * (u_N / pow(2, stage+1)), u_N);
-    vec2 twiddle = vec2(cos(2.0 * M_PI * k / float(u_N), sin(2.0 * M_PI * k / float(u_N))));
+    vec2 twiddle = vec2(cos(2.0 * M_PI * k / float(u_N)), sin(2.0 * M_PI * k / float(u_N)));
 
     int butterflySpan = int(pow(2, stage));
     int butterflyWing = int(mod(indexInStage, pow(2, stage + 1))) < butterflySpan ? 1 : 0;
@@ -27,28 +27,28 @@ void main()
     int bottomIndex = butterflyWing == 1 ? indexInStage + 1 : indexInStage;
 
     int topBitReversedIndex = bitReversedIndices.j[topIndex];
-    int bottomreversedIndex = bitReversedIndices.j[bottomIndex];
+    int bottomBitReversedIndex = bitReversedIndices.j[bottomIndex];
 
     if (stage == 0)
     {
         if (butterflyWing == 1)
         {
-            imageStore(twiddleIndices, index, vec4(twiddle.real, twiddle.im, topBitReversedIndex, bottomBitReversedIndex));
+            imageStore(twiddleFactors, x, vec4(twiddle.x, twiddle.y, topBitReversedIndex, bottomBitReversedIndex));
         }
         else
         {
-            imageStore(twiddleIndices, index, vec4(twiddle.real, twiddle.im, bottomBitReversedIndex, topBitReversedIndex));
+            imageStore(twiddleFactors, x, vec4(twiddle.x, twiddle.y, bottomBitReversedIndex, topBitReversedIndex));
         }
     } 
     else
     {
         if (butterflyWing == 1)
         {
-            imageStore(twiddleIndices, index, vec4(twiddle.real, twiddle.im, indexInStage, indexInStage + butterflySpan));
+            imageStore(twiddleFactors, x, vec4(twiddle.x, twiddle.y, indexInStage, indexInStage + butterflySpan));
         }
         else
         {
-            imageStore(twiddleIndices, index, vec4(twiddle.real, twiddle.im, indexInStage - butterflySpan, indexInStage));
+            imageStore(twiddleFactors, x, vec4(twiddle.x, twiddle.y, indexInStage - butterflySpan, indexInStage));
         }
     }
 }
