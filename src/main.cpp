@@ -31,6 +31,10 @@ bool firstMouse{true};
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+struct Uniform
+{
+    glm::mat4 view_proj;
+};
 
 void mosueCallback(GLFWwindow* window, double xPosIn, double yPosIn)
 {
@@ -79,31 +83,30 @@ int main()
     //glDisable(GL_BLEND);
 
     
-    //Shader shader = ResourceLoader::get().loadShader("shaders/ocean.vs", "shaders/ocean.fs");
-    //shader.use();
+    Shader shader = ResourceLoader::get().loadShader("shaders/ocean.vs", "shaders/ocean.fs");
+    shader.use();
     
     //VArray vao;
     //VBuffer vbo;
-    /*
-    VBuffer vbo{positions.data(), positions.size() * sizeof(GLfloat), GL_STATIC_DRAW};
-    VBufferLayout layout;
-    layout.addElement<GLfloat>(3);
-    layout.addElement<GLfloat>(3);
-    vao.addBuffer(vbo, layout);
     
-    Shader shader = ResourceManager::get().loadShader("basic", "shaders/triangle/vert.vs", "shaders/triangle/frag.fs");
+    //VBuffer vbo{positions.data(), positions.size() * sizeof(GLfloat), GL_STATIC_DRAW};
+    //VBufferLayout layout;
+    //layout.addElement<GLfloat>(3);
+    //layout.addElement<GLfloat>(3);
+    //vao.addBuffer(vbo, layout);
     
-    vbo.unbind();
-    vao.unbind();
-    */
-    constexpr int N = 64; // MUST BE A POWER OF 2
-    constexpr float amplitute = 0.00005f;
+    //Shader shader = ResourceManager::get().loadShader("basic", "shaders/triangle/vert.vs", "shaders/triangle/frag.fs");
+    
+    //vbo.unbind();
+    //vao.unbind();
+    
+    constexpr int N = 256; // MUST BE A POWER OF 2
+    constexpr float amplitute = 5.0f;
     constexpr float windSpeed = 32.0f;
-    constexpr float length = 64;
+    glm::vec2 windDirection{1.0f, 1.0f};
+    constexpr float length = 1024;
 
-    //Ocean ocean{N, amplitute, windSpeed, glm::vec2{1.0f, 1.0f}, length};
-
-
+    Ocean ocean{N, amplitute, windSpeed, windDirection, length};
 
     //vao.bind();
     //vbo.addData(ocean.m_vertices.data(), ocean.m_vertices.size() * sizeof(OceanVertex), GL_STATIC_DRAW);
@@ -122,13 +125,14 @@ int main()
     //vao.addBuffer(vbo, sizeof(OceanVertex), elements);
     //EBuffer ebo = EBuffer{ocean.m_indices.data(), ocean.m_indices.size(), GL_STATIC_DRAW};
 
+    
     Shader tShader = ResourceLoader::get().loadShader("shaders/testTex.vs", "shaders/testTex.fs");
 
     float v[] = {
-         0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // top left 
+         0.35f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
+         0.35f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
+        -0.35f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
+        -0.35f,  0.5f, 0.0f,   0.0f, 1.0f  // top left 
     };
 
     GLuint in[] = {
@@ -143,13 +147,11 @@ int main()
     VBufferLayout e;
     e.emplace_back(3, GL_FLOAT, GL_FALSE, 0);
     e.emplace_back(2, GL_FLOAT, GL_FALSE, 3*sizeof(float));
-    va.addBuffer(vb, 5 * sizeof(float), e);
+    va.addBuffer(&vb, 5 * sizeof(float), e);
     EBuffer eb = EBuffer{in, std::size(in), GL_STATIC_DRAW};
 
-    std::unique_ptr<Texture> testTex = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise0.png", false));
-    testTex->bind(0);
-    testTex->clampToEdge();
-    testTex->neareastFilter();
+    std::unique_ptr<UBuffer> ubo = std::make_unique<UBuffer>(sizeof(Uniform), GL_DYNAMIC_DRAW);
+
     tShader.use();
     tShader.setInt("texture1", 0);
 
@@ -169,28 +171,30 @@ int main()
         //glDrawArrays(GL_TRIANGLES, 0, 6);
         /*
         shader.use();
-
-        vao.bind();
-
+        //vao.bind();
+        ocean.draw(deltaTime, glm::vec3(1.0), glm::vec3(1.0), glm::mat4(1.0), glm::mat4(1.0), glm::mat4(1.0));
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
         //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         view = camera.getViewMat();
-        shader.setMat4("proj", projection);
-        shader.setMat4("view", view);
+        shader.setMat4("u_proj", projection);
+        shader.setMat4("u_view", view);
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3{0.0f, -2.0f, 0.0f});
-        shader.setMat4("model", model);
+        shader.setMat4("u_model", model);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glDrawElements(GL_TRIANGLES, ebo.count(), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, ocean.m_ebo->count(), GL_UNSIGNED_INT, nullptr);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        
         */
+        //ocean.waving(deltaTime);
         tShader.use();
-        testTex->bind(0);
+        //testTex->bind(0);
+        //tilde_h0k->bindActive(0);
         va.bind();
         glDrawElements(GL_TRIANGLES, eb.count(), GL_UNSIGNED_INT, nullptr);
-
+        
         window.swapBuffers();
         window.pollEvents();
     }
