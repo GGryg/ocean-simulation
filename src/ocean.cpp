@@ -231,7 +231,7 @@ void Ocean::calculateTwiddleFactor()
 
     m_twiddleFactors->bindImage(0, 0, 0, GL_WRITE_ONLY);
 
-    m_twiddleFactors_program->setInt("u_N", m_N);
+    m_twiddleFactors_program.setInt("u_N", m_N);
 
     glDispatchCompute(m_log_2_N, 8, 1);
 
