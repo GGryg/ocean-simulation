@@ -43,6 +43,7 @@ public:
     void generateMesh();
     void reverseIndices();
     GLuint reverseBits(GLuint n);
+    void calculateTwiddleFactor();
 
     int m_N{};
     int m_N1{};
@@ -50,6 +51,7 @@ public:
     float m_windSpeed;
     glm::vec2 m_windDirection{};
     float m_length;
+    int m_log_2_N;
 
     std::unique_ptr<Texture> m_noise0;
     std::unique_ptr<Texture> m_noise1;
@@ -57,6 +59,7 @@ public:
     std::unique_ptr<Texture> m_noise3;
 
     Shader m_tilde_h0k_program;
+    Shader m_twiddleFactors_program;
 
     std::unique_ptr<Texture> m_tilde_h0k;
     std::unique_ptr<Texture> m_tilde_h0minusk;

@@ -12,6 +12,7 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     , m_windSpeed{windSpeed_t}
     , m_windDirection{glm::normalize(windDirection_t)}
     , m_length{length_t}
+    , m_log_2_N{static_cast<int>(std::log(m_N) / std::log(2))}
 {
     //m_shader = ResourceManager::get().loadShader("ocean", "shaders/ocean.vs", "shaders/ocean.fs");
     //m_shader.use();
@@ -75,9 +76,9 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_tilde_h0k->unbind();
     m_tilde_h0minusk = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_tilde_h0minusk->bind();
+    m_tilde_h0minusk->allocateStorage(1);
     m_tilde_h0minusk->clampToEdge();
     m_tilde_h0minusk->neareastFilter();
-    m_tilde_h0minusk->allocateStorage(1);
     m_tilde_h0minusk->unbind();
 
     m_tilde_hkt_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
@@ -96,8 +97,11 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_tilde_hkt_dz->bilinearFilter();
     m_tilde_hkt_dz->unbind();
 
-    m_twiddleFactors = std::make_unique<Texture>(GL_TEXTURE_2D, log(m_N) / log(2), m_N, GL_RG32F, GL_RGBA);
+    m_twiddleFactors_program = ResourceLoader::get().loadShader("shaders/twiddle_factors.cs");
+
+    m_twiddleFactors = std::make_unique<Texture>(GL_TEXTURE_2D, m_log_2_N, m_N, GL_RG32F, GL_RGBA);
     m_twiddleFactors->bind();
+    m_twiddleFactors->allocateStorage(1);
     m_twiddleFactors->clampToEdge();
     m_twiddleFactors->neareastFilter();
     m_twiddleFactors->unbind();
@@ -219,6 +223,20 @@ void Ocean::reverseIndices()
         indices.push_back(reverseBits(i));
     }
     m_ssbo = std::make_unique<SSBuffer>(indices.data(), indices.size() * sizeof(GLuint), GL_STATIC_DRAW);
+}
+
+void Ocean::calculateTwiddleFactor()
+{
+    m_twiddleFactors_program.use();
+
+    m_twiddleFactors->bindImage(0, 0, 0, GL_WRITE_ONLY);
+
+    m_twiddleFactors_program->setInt("u_N", m_N);
+
+    glDispatchCompute(m_log_2_N, 8, 1);
+
+    glFinish();
+
 }
 
 void Ocean::waving(float deltaTime)
