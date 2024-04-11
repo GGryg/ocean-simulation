@@ -88,6 +88,7 @@ private:
 // Class abstracting shader storage buffer
 class SSBuffer
 {
+public:
     SSBuffer();
     SSBuffer(const void* data, std::size_t size, GLenum type);
     ~SSBuffer();
@@ -96,6 +97,8 @@ class SSBuffer
     void unbind() const;
 
     void addData(const void* data, std::size_t size, GLenum type);
-}
+private:
+    GLuint m_id;
+};
 
 #endif
