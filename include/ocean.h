@@ -31,7 +31,7 @@ public:
     Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t);
     ~Ocean();
 
-    float phillipsSepctrum(int n, int m);
+    [[deprecated("Moved to GPU calculaction, use tilde_h0k")]] float phillipsSepctrum(int n, int m);
 
     void tilde_h0k();
     void tilde_htk(float t, int n, int m);
