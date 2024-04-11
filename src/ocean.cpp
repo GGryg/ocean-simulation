@@ -39,22 +39,22 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_vao->addBuffer(m_vbo.get(), sizeof(OceanVertex), elements);
     m_ebo = std::make_unique<EBuffer>(m_indices.data(), m_indices.size(), GL_STATIC_DRAW);
 
-    m_noise0 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise0.png", true));
+    m_noise0 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise0.png", false));
     m_noise0->bind();
     m_noise0->clampToEdge();
     m_noise0->neareastFilter();
     m_noise0->unbind();
-    m_noise1 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise1.png", true));
+    m_noise1 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise1.png", false));
     m_noise1->bind();
     m_noise1->clampToEdge();
     m_noise1->neareastFilter();
     m_noise1->unbind();
-    m_noise2 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise2.png", true));
+    m_noise2 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise2.png", false));
     m_noise2->bind();
     m_noise2->clampToEdge();
     m_noise2->neareastFilter();
     m_noise2->unbind();
-    m_noise3 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise3.png", true));
+    m_noise3 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise3.png", false));
     m_noise3->bind();
     m_noise3->clampToEdge();
     m_noise3->neareastFilter();
@@ -63,16 +63,15 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
 
     m_tilde_h0k_program = ResourceLoader::get().loadShader("shaders/h_0_k.cs");
 
-    m_tilde_h0k = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
-    glActiveTexture(GL_TEXTURE0);
-
+    m_tilde_h0k = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_tilde_h0k->bind();
+    //m_tilde_h0k->texImage2D();
+    m_tilde_h0k->allocateStorage(1);
     m_tilde_h0k->clampToEdge();
     m_tilde_h0k->neareastFilter();
     //m_tilde_h0k->allocateStorage(1);
-    m_tilde_h0k->texImage2D();
     m_tilde_h0k->unbind();
-    m_tilde_h0minusk = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_tilde_h0minusk = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_tilde_h0minusk->bind();
     m_tilde_h0minusk->clampToEdge();
     m_tilde_h0minusk->neareastFilter();
