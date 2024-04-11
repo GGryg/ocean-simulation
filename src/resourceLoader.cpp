@@ -58,7 +58,7 @@ Shader ResourceLoader::loadShaderFromFile(const std::string& vertexShaderFile, c
 Shader ResourceLoader::loadComputeShaderFromFile(const std::string& computeShaderFile)
 {
     std::string computeShaderSource;
-    std::ifstream computeShaderF(computeShaderFile);
+    std::ifstream computeShaderF;
     computeShaderF.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
     {
