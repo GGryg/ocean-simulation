@@ -33,22 +33,22 @@ void main()
     {
         if (butterflyWing == 1)
         {
-            imageStore(twiddleFactors, ivec2(x), vec4(twiddle.x, twiddle.y, topBitReversedIndex, bottomBitReversedIndex));
+            imageStore(twiddleFactors, ivec2(x), vec4(twiddle.xy, topBitReversedIndex, bottomBitReversedIndex));
         }
         else
         {
-            imageStore(twiddleFactors, ivec2(x), vec4(twiddle.x, twiddle.y, bottomBitReversedIndex, topBitReversedIndex));
+            imageStore(twiddleFactors, ivec2(x), vec4(twiddle.xy, bottomBitReversedIndex, topBitReversedIndex));
         }
     } 
     else
     {
         if (butterflyWing == 1)
         {
-            imageStore(twiddleFactors, ivec2(x), vec4(twiddle.x, twiddle.y, indexInStage, indexInStage + butterflySpan));
+            imageStore(twiddleFactors, ivec2(x), vec4(twiddle.xy, indexInStage, indexInStage + butterflySpan));
         }
         else
         {
-            imageStore(twiddleFactors, ivec2(x), vec4(twiddle.x, twiddle.y, indexInStage - butterflySpan, indexInStage));
+            imageStore(twiddleFactors, ivec2(x), vec4(twiddle.xy, indexInStage - butterflySpan, indexInStage));
         }
     }
 }
