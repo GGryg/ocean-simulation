@@ -25,15 +25,10 @@ layout (binding = 5) uniform sampler2D noise3;
 // Box-Muller transform
 vec4 gaussian_random_number(vec2 texelCoord)
 {
-    float noise0_value = clamp(texture(noise0, texelCoord).r, MIN_NOISE_CLAMP, MAX_NOISE_CLAMP);
-    float noise1_value = clamp(texture(noise1, texelCoord).r, MIN_NOISE_CLAMP, MAX_NOISE_CLAMP);
-    float noise2_value = clamp(texture(noise2, texelCoord).r, MIN_NOISE_CLAMP, MAX_NOISE_CLAMP);
-    float noise3_value = clamp(texture(noise3, texelCoord).r, MIN_NOISE_CLAMP, MAX_NOISE_CLAMP);
-
-    float u0 = 2.0 * M_PI * noise0_value;
-    float u1 = 2.0 * M_PI * noise2_value;
-    float v0 = sqrt(-2.0 * log(noise1_value));
-    float v1 = sqrt(-2.0 * log(noise3_value));
+    float u0 = 2.0 * M_PI * clamp(texture(noise0, texelCoord).r, MIN_NOISE_CLAMP, MAX_NOISE_CLAMP);
+    float v0 = sqrt(-2.0* log(clamp(texture(noise1, texelCoord).r, MIN_NOISE_CLAMP, MAX_NOISE_CLAMP)));
+    float u1 = 2.0 * M_PI * clamp(texture(noise2, texelCoord).r, MIN_NOISE_CLAMP, MAX_NOISE_CLAMP);
+    float v1 = sqrt(-2.0 * log(clamp(texture(noise3, texelCoord).r, MIN_NOISE_CLAMP, MAX_NOISE_CLAMP)));
 
     return vec4(v0 * cos(u0), v0 * sin(u0), v1 * cos(u1), v1 * sin(u1));
 }
