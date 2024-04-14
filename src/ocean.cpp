@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <iostream>
+#include <GLFW/glfw3.h>
 
 Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t)
     : m_N{N_t}
@@ -64,7 +65,7 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_noise3->unbind();
 
 
-    m_tilde_h0k_program = ResourceLoader::get().loadShader("shaders/h_0_k.cs");
+    m_tilde_h0k_program = ResourceLoader::get().loadShader("shaders/h_0_k_cs.glsl");
 
     m_tilde_h0k = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_tilde_h0k->bind();
@@ -81,23 +82,28 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_tilde_h0minusk->neareastFilter();
     m_tilde_h0minusk->unbind();
 
+    m_tilde_hkt_program = ResourceLoader::get().loadShader("shaders/h_k_t_cs.glsl");
+
     m_tilde_hkt_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
     m_tilde_hkt_dx->bind();
+    m_tilde_hkt_dx->allocateStorage(1);
     m_tilde_hkt_dx->repeat();
     m_tilde_hkt_dx->bilinearFilter();
     m_tilde_hkt_dx->unbind();
     m_tilde_hkt_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
     m_tilde_hkt_dy->bind();
+    m_tilde_hkt_dy->allocateStorage(1);
     m_tilde_hkt_dy->repeat();
     m_tilde_hkt_dy->bilinearFilter();
     m_tilde_hkt_dy->unbind();
     m_tilde_hkt_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
     m_tilde_hkt_dz->bind();
+    m_tilde_hkt_dz->allocateStorage(1);
     m_tilde_hkt_dz->repeat();
     m_tilde_hkt_dz->bilinearFilter();
     m_tilde_hkt_dz->unbind();
 
-    m_twiddleFactors_program = ResourceLoader::get().loadShader("shaders/twiddle_factors.cs");
+    m_twiddleFactors_program = ResourceLoader::get().loadShader("shaders/twiddle_factors_cs.glsl");
 
     m_twiddleFactors = std::make_unique<Texture>(GL_TEXTURE_2D, m_log_2_N, m_N, GL_RG32F, GL_RGBA);
     m_twiddleFactors->bind();
@@ -116,7 +122,7 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_normalMap->unbind();
 
     tilde_h0k();
-
+    calculateTwiddleFactor();
 }
 
 Ocean::~Ocean()
@@ -202,6 +208,24 @@ void Ocean::tilde_h0k()
     glFinish();
 }
 
+void Ocean::tilde_hkt(float deltaTime)
+{
+    m_tilde_hkt_program.use();
+
+    m_tilde_h0k->bindImage(0, 0, 0, GL_READ_ONLY);
+    m_tilde_h0minusk->bindImage(1, 0, 0, GL_READ_ONLY);
+    m_tilde_hkt_dx->bindImage(2, 0, 0, GL_WRITE_ONLY);
+    m_tilde_hkt_dy->bindImage(3, 0, 0, GL_WRITE_ONLY);
+    m_tilde_hkt_dz->bindImage(4, 0, 0, GL_WRITE_ONLY);
+
+    m_tilde_hkt_program.setInt("u_N", m_N);
+    m_tilde_hkt_program.setInt("u_L", m_length);
+    m_tilde_hkt_program.setFloat("u_t", static_cast<float>(glfwGetTime()));
+
+    glDispatchCompute(8, 8, 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+}
+
 GLuint Ocean::reverseBits(GLuint n)
 {
     GLuint result = 0;
@@ -234,14 +258,14 @@ void Ocean::calculateTwiddleFactor()
     m_twiddleFactors_program.setInt("u_N", m_N);
 
     glDispatchCompute(m_log_2_N, 8, 1);
-
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
     glFinish();
 
 }
 
 void Ocean::waving(float deltaTime)
 {
-    tilde_h0k();
+    tilde_hkt(deltaTime);
 }
 
 void Ocean::draw(float deltaTime, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model)
