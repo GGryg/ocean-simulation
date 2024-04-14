@@ -34,7 +34,7 @@ public:
     [[deprecated("Moved to GPU calculaction, use tilde_h0k")]] float phillipsSepctrum(int n, int m);
 
     void tilde_h0k();
-    void tilde_htk(float t, int n, int m);
+    void tilde_hkt(float deltaTime);
 
     void waving(float deltaTime); // update
     void draw(float deltaTime, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model);
@@ -59,6 +59,7 @@ public:
     std::unique_ptr<Texture> m_noise3;
 
     Shader m_tilde_h0k_program;
+    Shader m_tilde_hkt_program;
     Shader m_twiddleFactors_program;
 
     std::unique_ptr<Texture> m_tilde_h0k;
