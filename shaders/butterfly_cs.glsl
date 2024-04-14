@@ -26,12 +26,12 @@ void horizontal()
     vec2 h;
     ivec2 x = ivec2(gl_GlobalInvocationID.xy);
     vec4 data = imageLoad(twiddleFactors, ivec2(u_stage, x.x)).rgba;
+    vec2 w = vec2(data.xy);
 
     if(u_pingpong == 0)
     {
         vec2 p = imageLoad(ping, ivec2(data.z, x.y)).rg;
         vec2 q = imageLoad(ping, ivec2(data.w, x.y)).rg;
-        vec2 w = vec2(data.xy);
 
         h = p + complex_mul(w, q);
 
@@ -41,10 +41,8 @@ void horizontal()
     {
         vec2 p = imageLoad(pong, ivec2(data.z, x.y)).rg;
         vec2 q = imageLoad(pong, ivec2(data.w, x.y)).rg;
-        vec2 w = vec2(data.xy);
 
         h = p + complex_mul(w, q);
-        //h = vec2(1.0, 0.0);
 
         imageStore(ping, x, vec4(h, 0, 1));
     }
@@ -55,12 +53,12 @@ void vertical()
     vec2 h;
     ivec2 x = ivec2(gl_GlobalInvocationID.xy);
     vec4 data = imageLoad(twiddleFactors, ivec2(u_stage, x.y)).rgba;
+    vec2 w = vec2(data.xy);
 
     if(u_pingpong == 0)
     {
         vec2 p = imageLoad(ping, ivec2(x.x, data.z)).rg;
         vec2 q = imageLoad(ping, ivec2(x.x, data.w)).rg;
-        vec2 w = vec2(data.xy);
 
         h = p + complex_mul(w, q);
 
@@ -70,7 +68,6 @@ void vertical()
     {
         vec2 p = imageLoad(pong, ivec2(x.x, data.z)).rg;
         vec2 q = imageLoad(pong, ivec2(x.x, data.w)).rg;
-        vec2 w = vec2(data.xy);
 
         h = p + complex_mul(w, q);
 
