@@ -83,7 +83,7 @@ int main()
     //glDisable(GL_BLEND);
 
     
-    Shader shader = ResourceLoader::get().loadShader("shaders/ocean.vs", "shaders/ocean.fs");
+    Shader shader = ResourceLoader::get().loadShader("shaders/ocean_vs.glsl", "shaders/ocean_fs.glsl");
     shader.use();
     
     //VArray vao;
@@ -188,10 +188,12 @@ int main()
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         
         */
-        //ocean.waving(deltaTime);
+        ocean.waving(deltaTime);
         tShader.use();
         //testTex->bind(0);
         //tilde_h0k->bindActive(0);
+        ocean.m_tilde_hkt_dy->bindActive(0);
+        ocean.m_tilde_hkt_dy->bindImage(0, 0, 0, GL_READ_ONLY);
         va.bind();
         glDrawElements(GL_TRIANGLES, eb.count(), GL_UNSIGNED_INT, nullptr);
         
