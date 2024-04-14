@@ -94,6 +94,7 @@ public:
     ~SSBuffer();
 
     void bind() const;
+    void bindBase(int unit) const;
     void unbind() const;
 
     void addData(const void* data, std::size_t size, GLenum type);

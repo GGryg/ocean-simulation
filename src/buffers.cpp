@@ -156,9 +156,14 @@ void SSBuffer::bind() const
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_id);
 }
 
+void SSBuffer::bindBase(int unit) const
+{
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, unit, m_id);
+}
+
 void SSBuffer::unbind() const
 {
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void SSBuffer::addData(const void* data, std::size_t size, GLenum type)
