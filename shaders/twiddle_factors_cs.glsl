@@ -31,14 +31,7 @@ void main()
 
     if (stage == 0)
     {
-        if (butterflyWing == 1)
-        {
-            imageStore(twiddleFactors, ivec2(x), vec4(twiddle.xy, topBitReversedIndex, bottomBitReversedIndex));
-        }
-        else
-        {
-            imageStore(twiddleFactors, ivec2(x), vec4(twiddle.xy, bottomBitReversedIndex, topBitReversedIndex));
-        }
+        imageStore(twiddleFactors, ivec2(x), vec4(twiddle.xy, topBitReversedIndex, bottomBitReversedIndex));
     } 
     else
     {
