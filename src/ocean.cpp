@@ -126,8 +126,7 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_dx->unbind();
     m_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_dy->bind();
-    //m_dy->allocateStorage(1);
-    m_dy->texImage2D();
+    m_dy->allocateStorage(1);
     m_dy->unbind();
     m_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_dz->bind();

@@ -195,7 +195,7 @@ int main()
         //ocean.m_twiddleFactors->bindActive(0);
         //ocean.m_twiddleFactors->bindImage(0, 0, 0, GL_READ_ONLY);
         //ocean.m_dy->bindActive(0);
-        ocean.m_tilde_hkt_dy->bindImage(0, 0, 0, GL_READ_ONLY);
+        ocean.m_dy->bindImage(0, 0, 0, GL_READ_ONLY);
         //ocean.m_pingPong->bindImage(0, 0, 0, GL_READ_ONLY);
         //ocean.m_tilde_hkt_dx->bindImage(0, 0, 0, GL_READ_ONLY);
         va.bind();
