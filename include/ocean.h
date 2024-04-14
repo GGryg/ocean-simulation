@@ -44,6 +44,7 @@ public:
     void reverseIndices();
     GLuint reverseBits(GLuint n);
     void calculateTwiddleFactor();
+    void butterflyOperation(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& output);
 
     int m_N{};
     int m_N1{};
@@ -61,6 +62,8 @@ public:
     Shader m_tilde_h0k_program;
     Shader m_tilde_hkt_program;
     Shader m_twiddleFactors_program;
+    Shader m_butterflyOperation_program;
+    Shader m_inversion_program;
 
     std::unique_ptr<Texture> m_tilde_h0k;
     std::unique_ptr<Texture> m_tilde_h0minusk;

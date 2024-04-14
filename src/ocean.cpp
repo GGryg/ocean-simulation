@@ -84,19 +84,19 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
 
     m_tilde_hkt_program = ResourceLoader::get().loadShader("shaders/h_k_t_cs.glsl");
 
-    m_tilde_hkt_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_tilde_hkt_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_tilde_hkt_dx->bind();
     m_tilde_hkt_dx->allocateStorage(1);
     m_tilde_hkt_dx->repeat();
     m_tilde_hkt_dx->bilinearFilter();
     m_tilde_hkt_dx->unbind();
-    m_tilde_hkt_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_tilde_hkt_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_tilde_hkt_dy->bind();
     m_tilde_hkt_dy->allocateStorage(1);
     m_tilde_hkt_dy->repeat();
     m_tilde_hkt_dy->bilinearFilter();
     m_tilde_hkt_dy->unbind();
-    m_tilde_hkt_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+    m_tilde_hkt_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_tilde_hkt_dz->bind();
     m_tilde_hkt_dz->allocateStorage(1);
     m_tilde_hkt_dz->repeat();
@@ -105,17 +105,35 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
 
     m_twiddleFactors_program = ResourceLoader::get().loadShader("shaders/twiddle_factors_cs.glsl");
 
-    m_twiddleFactors = std::make_unique<Texture>(GL_TEXTURE_2D, m_log_2_N, m_N, GL_RG32F, GL_RGBA);
+    m_twiddleFactors = std::make_unique<Texture>(GL_TEXTURE_2D, m_log_2_N, m_N, GL_RGBA32F, GL_RGBA);
     m_twiddleFactors->bind();
     m_twiddleFactors->allocateStorage(1);
     m_twiddleFactors->clampToEdge();
     m_twiddleFactors->neareastFilter();
     m_twiddleFactors->unbind();
-    m_pingPong = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
-    m_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
-    m_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
-    m_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
-    m_normalMap = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RGBA);
+
+    m_butterflyOperation_program = ResourceLoader::get().loadShader("shaders/butterfly_cs.glsl");
+    m_inversion_program = ResourceLoader::get().loadShader("shaders/inversion_cs.glsl");
+
+    m_pingPong = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_pingPong->bind();
+    m_pingPong->allocateStorage(1);
+    m_pingPong->unbind();
+
+    m_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_dx->bind();
+    m_dx->allocateStorage(1);
+    m_dx->unbind();
+    m_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_dy->bind();
+    //m_dy->allocateStorage(1);
+    m_dy->texImage2D();
+    m_dy->unbind();
+    m_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_dz->bind();
+    m_dz->allocateStorage(1);
+    m_dz->unbind();
+    m_normalMap = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_normalMap->bind();
     m_normalMap->repeat();
     m_normalMap->bilinearFilter();
@@ -254,6 +272,7 @@ void Ocean::calculateTwiddleFactor()
     m_twiddleFactors_program.use();
 
     m_twiddleFactors->bindImage(0, 0, 0, GL_WRITE_ONLY);
+    m_ssbo->bindBase(1);
 
     m_twiddleFactors_program.setInt("u_N", m_N);
 
@@ -263,9 +282,57 @@ void Ocean::calculateTwiddleFactor()
 
 }
 
+void Ocean::butterflyOperation(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& output)
+{
+    m_butterflyOperation_program.use();
+    m_twiddleFactors->bindImage(0, 0, 0, GL_READ_ONLY);
+    input->bindImage(1, 0, 0, GL_READ_WRITE);
+    m_pingPong->bindImage(2, 0, 0, GL_READ_WRITE);
+
+    int pingpong = 0;
+    for(int i = 0; i < m_log_2_N; i++)
+    {
+        m_butterflyOperation_program.setInt("u_pingpong", pingpong);
+        m_butterflyOperation_program.setInt("u_isVertical", 0);
+        m_butterflyOperation_program.setInt("u_stage", i);
+
+        glDispatchCompute(8, 8, 1);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+        pingpong ^= 1;
+    }
+
+    for(int i = 0; i < m_log_2_N; i++)
+    {
+        m_butterflyOperation_program.setInt("u_pingpong", pingpong);
+        m_butterflyOperation_program.setInt("u_isVertical", 1);
+        m_butterflyOperation_program.setInt("u_stage", i);
+
+        glDispatchCompute(8, 8, 1);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+        pingpong ^= 1;
+    }
+
+    m_inversion_program.use();
+
+    m_inversion_program.setInt("u_pingpong", pingpong);
+    m_inversion_program.setInt("u_N", m_N);
+
+    output->bindImage(0, 0, 0, GL_WRITE_ONLY);
+    input->bindImage(1, 0, 0, GL_READ_ONLY);
+    m_pingPong->bindImage(2, 0, 0, GL_READ_ONLY);
+
+    glDispatchCompute(8, 8, 1);
+    glFinish();
+}
+
 void Ocean::waving(float deltaTime)
 {
     tilde_hkt(deltaTime);
+    butterflyOperation(m_tilde_hkt_dy, m_dy);
+    //butterflyOperation(m_tilde_hkt_dx, m_dx);
+    //butterflyOperation(m_tilde_hkt_dz, m_dz);
 }
 
 void Ocean::draw(float deltaTime, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model)
