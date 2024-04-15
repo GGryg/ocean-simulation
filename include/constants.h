@@ -10,7 +10,7 @@ namespace constants
 
     inline constexpr int gridSize = 64;
     inline constexpr int gridSizeP1 = gridSize + 1;
-    inline constexpr int gridUVSize = 32;
+    inline constexpr int gridUVSize = 8;
 }
 
 #endif
