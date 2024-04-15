@@ -330,8 +330,8 @@ void Ocean::waving(float deltaTime)
 {
     tilde_hkt(deltaTime);
     butterflyOperation(m_tilde_hkt_dy, m_dy);
-    //butterflyOperation(m_tilde_hkt_dx, m_dx);
-    //butterflyOperation(m_tilde_hkt_dz, m_dz);
+    butterflyOperation(m_tilde_hkt_dx, m_dx);
+    butterflyOperation(m_tilde_hkt_dz, m_dz);
 }
 
 void Ocean::draw(float deltaTime, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model)

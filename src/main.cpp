@@ -163,13 +163,14 @@ int main()
         lastFrame = currentFrame;
 
         processInput(window);
+        ocean.waving(deltaTime);
         glClearColor(.1f, .2f, .3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //vao.bind();
         //shader.use();
         //glDrawArrays(GL_TRIANGLES, 0, 6);
-        /*
+        
         shader.use();
         //vao.bind();
         ocean.draw(deltaTime, glm::vec3(1.0), glm::vec3(1.0), glm::mat4(1.0), glm::mat4(1.0), glm::mat4(1.0));
@@ -183,23 +184,29 @@ int main()
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3{0.0f, -2.0f, 0.0f});
         shader.setMat4("u_model", model);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        shader.setInt("u_dx", 0);
+        ocean.m_dx->bindActive(0);
+        shader.setInt("u_dy", 1);
+        ocean.m_dy->bindActive(1);
+        shader.setInt("u_dz", 2);
+        ocean.m_dz->bindActive(2);
+        shader.setFloat("u_displacement", 0.5f);
+        shader.setFloat("u_choppiness", 0.7f);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawElements(GL_TRIANGLES, ocean.m_ebo->count(), GL_UNSIGNED_INT, nullptr);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         
-        */
-        ocean.waving(deltaTime);
-        tShader.use();
+        //tShader.use();
         //testTex->bind(0);
         //tilde_h0k->bindActive(0);
         //ocean.m_twiddleFactors->bindActive(0);
         //ocean.m_twiddleFactors->bindImage(0, 0, 0, GL_READ_ONLY);
         //ocean.m_dy->bindActive(0);
-        ocean.m_dy->bindImage(0, 0, 0, GL_READ_ONLY);
+        //ocean.m_dz->bindImage(0, 0, 0, GL_READ_ONLY);
         //ocean.m_pingPong->bindImage(0, 0, 0, GL_READ_ONLY);
         //ocean.m_tilde_hkt_dx->bindImage(0, 0, 0, GL_READ_ONLY);
-        va.bind();
-        glDrawElements(GL_TRIANGLES, eb.count(), GL_UNSIGNED_INT, nullptr);
+        //va.bind();
+        //glDrawElements(GL_TRIANGLES, eb.count(), GL_UNSIGNED_INT, nullptr);
         //break;
         window.swapBuffers();
         window.pollEvents();
