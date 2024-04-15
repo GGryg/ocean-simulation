@@ -24,7 +24,7 @@ void processInput(Window& window)
     }
 }
 
-Camera camera(glm::vec3(0.0f, 12.0f, 30.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+Camera camera(glm::vec3(0.0f, 16.0f, 30.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 float lastX;
 float lastY;
 bool firstMouse{true};
@@ -101,8 +101,8 @@ int main()
     //vao.unbind();
     
     constexpr int N = 256; // MUST BE A POWER OF 2
-    constexpr float amplitute = 5.0f;
-    constexpr float windSpeed = 32.0f;
+    constexpr float amplitute = 15.0f;
+    constexpr float windSpeed = 64.0f;
     glm::vec2 windDirection{1.0f, 1.0f};
     constexpr float length = 1024;
 
@@ -155,7 +155,7 @@ int main()
     tShader.use();
     tShader.setInt("texture1", 0);
 
-    glm::vec3 lightPosition{1.2f, 2.0f, 2.0f};
+    glm::vec3 lightPosition{1.2f, 20.0f, 2.0f};
 
     while(window.isOpen())
     {
@@ -172,7 +172,7 @@ int main()
         //vao.bind();
         //shader.use();
         //glDrawArrays(GL_TRIANGLES, 0, 6);
-        /*
+        
         shader.use();
         //vao.bind();
         ocean.draw(deltaTime, glm::vec3(1.0), glm::vec3(1.0), glm::mat4(1.0), glm::mat4(1.0), glm::mat4(1.0));
@@ -192,13 +192,21 @@ int main()
         ocean.m_dy->bindActive(1);
         shader.setInt("u_dz", 2);
         ocean.m_dz->bindActive(2);
+        shader.setInt("u_normalMap", 3);
+        ocean.m_normalMap->bindActive(3);
         shader.setFloat("u_displacement", 0.5f);
         shader.setFloat("u_choppiness", 0.7f);
+
+        // lightining/shadows
+        shader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader.setVec3("lightPosition", lightPosition);
+        shader.setVec3("viewPosition", camera.position());
+
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawElements(GL_TRIANGLES, ocean.m_ebo->count(), GL_UNSIGNED_INT, nullptr);
         //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        */
-        tShader.use();
+        
+        //tShader.use();
         //testTex->bind(0);
         //tilde_h0k->bindActive(0);
         //ocean.m_twiddleFactors->bindActive(0);
@@ -207,9 +215,9 @@ int main()
         //ocean.m_dz->bindImage(0, 0, 0, GL_READ_ONLY);
         //ocean.m_pingPong->bindImage(0, 0, 0, GL_READ_ONLY);
         //ocean.m_tilde_hkt_dx->bindImage(0, 0, 0, GL_READ_ONLY);
-        ocean.m_normalMap->bindImage(0, 0, 0, GL_READ_ONLY);
-        va.bind();
-        glDrawElements(GL_TRIANGLES, eb.count(), GL_UNSIGNED_INT, nullptr);
+        //ocean.m_normalMap->bindImage(0, 0, 0, GL_READ_ONLY);
+        //va.bind();
+        //glDrawElements(GL_TRIANGLES, eb.count(), GL_UNSIGNED_INT, nullptr);
         //break;
         window.swapBuffers();
         window.pollEvents();

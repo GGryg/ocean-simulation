@@ -15,6 +15,7 @@ public:
     void processMouse(float xoffset, float yoffset);
 
     float zoom() const;
+    const glm::vec3& position() const;
 private:
     void updateVectors();
 

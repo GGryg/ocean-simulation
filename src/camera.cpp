@@ -43,6 +43,11 @@ float Camera::zoom() const
     return m_zoom;
 }
 
+const glm::vec3& Camera::position() const
+{
+    return m_position;
+}
+
 void Camera::updateVectors()
 {
     glm::vec3 front;
