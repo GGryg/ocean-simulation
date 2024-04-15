@@ -132,8 +132,12 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_dz->bind();
     m_dz->allocateStorage(1);
     m_dz->unbind();
+
+    m_normalMap_program = ResourceLoader::get().loadShader("shaders/normal_map_cs.glsl");
+
     m_normalMap = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_normalMap->bind();
+    m_normalMap->allocateStorage(1);
     m_normalMap->repeat();
     m_normalMap->bilinearFilter();
     m_normalMap->unbind();
@@ -326,12 +330,28 @@ void Ocean::butterflyOperation(std::unique_ptr<Texture>& input, std::unique_ptr<
     glFinish();
 }
 
+void Ocean::normalMap()
+{
+    m_normalMap_program.use();
+    m_normalMap->bindImage(0, 0, 0, GL_WRITE_ONLY);
+
+    m_normalMap_program.setInt("u_dy", 1);
+    m_dy->bindActive(1);
+    
+    m_normalMap_program.setInt("u_N", m_N);
+
+    glDispatchCompute(8, 8, 1);
+    glFinish();
+}
+
 void Ocean::waving(float deltaTime)
 {
     tilde_hkt(deltaTime);
     butterflyOperation(m_tilde_hkt_dy, m_dy);
     butterflyOperation(m_tilde_hkt_dx, m_dx);
     butterflyOperation(m_tilde_hkt_dz, m_dz);
+
+    normalMap();
 }
 
 void Ocean::draw(float deltaTime, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model)
