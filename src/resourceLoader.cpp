@@ -8,86 +8,60 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-Shader ResourceLoader::loadShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
+std::unique_ptr<Shader> ResourceLoader::loadShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
 {  
     Logger::get().log("Loading vertex and fragment shader from files: " + vertexShaderFile + ", " + fragmentShaderFile);
-    return loadShaderFromFile(vertexShaderFile, fragmentShaderFile);
+    std::string vertexShader = loadShaderFromFile(vertexShaderFile);
+    std::string fragmentShader = loadShaderFromFile(fragmentShaderFile);
+    if(vertexShader == "" || fragmentShader == "")
+    {
+        return nullptr;
+    }
+    return std::make_unique<Shader>(vertexShader, fragmentShader);
 }
 
-Shader ResourceLoader::loadShader(const std::string& computeShaderFile)
+std::unique_ptr<Shader> ResourceLoader::loadShader(const std::string& computeShaderFile)
 {
     Logger::get().log("Loading compute shader from file: " + computeShaderFile);
-    return loadComputeShaderFromFile(computeShaderFile);
+    std::string computeShader = loadShaderFromFile(computeShaderFile);
+    if(computeShader == "")
+    {
+        return nullptr;
+    }
+    return std::make_unique<Shader>(computeShader);
 }
 
-Shader ResourceLoader::loadShaderFromFile(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
+std::string ResourceLoader::loadShaderFromFile(const std::string& shaderPath)
 {
-    std::string vertexShaderSource;
-    std::string fragmentShaderSource;
-    std::ifstream vertexShaderF;
-    std::ifstream fragmentShaderF;
+    std::string shaderSource;
+    std::ifstream shaderFile;
 
-
-    vertexShaderF.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    fragmentShaderF.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
     {
-        vertexShaderF.open(vertexShaderFile);
-        fragmentShaderF.open(fragmentShaderFile);
-        std::stringstream vertexShaderStream;
-        std::stringstream fragmnetShaderStream;
+        shaderFile.open(shaderPath);
+        std::stringstream shaderStream;
 
-        vertexShaderStream << vertexShaderF.rdbuf();
-        fragmnetShaderStream << fragmentShaderF.rdbuf();
+        shaderStream << shaderFile.rdbuf();
 
-        vertexShaderF.close();
-        fragmentShaderF.close();
+        shaderFile.close();
 
-        vertexShaderSource = vertexShaderStream.str();
-        fragmentShaderSource = fragmnetShaderStream.str();
+        shaderSource = shaderStream.str();
     }
     catch(std::exception& ex)
     {
-        Logger::get().log("SHADER: Failed to read shader files", true);
+        Logger::get().log("SHADER: Failed to read shader file: " + shaderPath , true);
         Logger::get().log(ex.what(), true);
+        return "";
     }
 
-    return Shader{vertexShaderSource, fragmentShaderSource};
+    return shaderSource;
 }
 
-Shader ResourceLoader::loadComputeShaderFromFile(const std::string& computeShaderFile)
-{
-    std::string computeShaderSource;
-    std::ifstream computeShaderF;
-    computeShaderF.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    try
-    {
-        computeShaderF.open(computeShaderFile);
-        std::stringstream computeShaderStream;
-
-        computeShaderStream << computeShaderF.rdbuf();
-
-        computeShaderF.close();
-
-        computeShaderSource = computeShaderStream.str();
-    }
-    catch(std::exception& ex)
-    {
-        Logger::get().log("COMPUTE:SHADER: Failed to read shader files", true);
-        Logger::get().log(ex.what(), true);
-    }
-
-    return Shader{computeShaderSource};
-}
-
-Texture* ResourceLoader::loadTexture(const std::string& textureFile, bool alpha)
+std::unique_ptr<Texture> ResourceLoader::loadTexture(const std::string& textureFile, bool alpha)
 {
     Logger::get().log("Loading texture from file: " + textureFile);
-    return loadTextureFromFile(textureFile, alpha);
-}
 
-Texture* ResourceLoader::loadTextureFromFile(const std::string& textureFile, bool alpha)
-{
     GLint width;
     GLint height;
     GLint nrChannels;
@@ -101,9 +75,9 @@ Texture* ResourceLoader::loadTextureFromFile(const std::string& textureFile, boo
     GLenum internalFormat = alpha ? GL_RGBA : GL_RGB;
     GLenum imageFormat = alpha ? GL_RGBA : GL_RGB;
 
-    Texture* texture = new Texture(GL_TEXTURE_2D, width, height, nrChannels, internalFormat, imageFormat);
+    std::unique_ptr<Texture> texture = std::make_unique<Texture>(GL_TEXTURE_2D, width, height, nrChannels, internalFormat, imageFormat);
     texture->generate(data);
     stbi_image_free(data);
 
-    return texture;
+    return std::move(texture);
 }
