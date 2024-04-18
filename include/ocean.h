@@ -39,6 +39,15 @@ public:
     void waving(float deltaTime); // update
     void draw(float deltaTime, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model);
 
+    void setAmplitude(float amplitude);
+    float amplitude() const;
+    void setWindSpeed(float windSpeed);
+    float windSpeed() const;
+    void setwindDirection(const glm::vec2& windDirection);
+    const glm::vec2& windDirection() const;
+    void setLength(float length);
+    float length() const;
+
 public:
     void generateMesh();
     void reverseIndices();
@@ -55,17 +64,19 @@ public:
     float m_length;
     int m_log_2_N;
 
+    bool m_recalculateSpectrum;
+
     std::unique_ptr<Texture> m_noise0;
     std::unique_ptr<Texture> m_noise1;
     std::unique_ptr<Texture> m_noise2;
     std::unique_ptr<Texture> m_noise3;
 
-    Shader m_tilde_h0k_program;
-    Shader m_tilde_hkt_program;
-    Shader m_twiddleFactors_program;
-    Shader m_butterflyOperation_program;
-    Shader m_inversion_program;
-    Shader m_normalMap_program;
+    std::unique_ptr<Shader> m_tilde_h0k_shader;
+    std::unique_ptr<Shader> m_tilde_hkt_shader;
+    std::unique_ptr<Shader> m_twiddleFactors_shader;
+    std::unique_ptr<Shader> m_butterflyOperation_shader;
+    std::unique_ptr<Shader> m_inversion_shader;
+    std::unique_ptr<Shader> m_normalMap_shader;
 
     std::unique_ptr<Texture> m_tilde_h0k;
     std::unique_ptr<Texture> m_tilde_h0minusk;
