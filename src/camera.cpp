@@ -8,7 +8,7 @@ Camera::Camera(glm::vec3 position_t, glm::vec3 worldUp_t, float yaw_t, float pit
     , m_worldUp{worldUp_t}
     , yaw{yaw_t}
     , pitch{pitch_t}
-    , movementSpeed{2.0f}
+    , movementSpeed{200.0f}
     , mouseSensitivity{0.025f}
 {
     updateVectors();
@@ -36,6 +36,27 @@ void Camera::processMouse(float xoffset, float yoffset)
     }
 
     updateVectors();
+}
+
+void Camera::processKeyboard(float deltaTime, CameraMoveDirection direction)
+{
+    float vel = movementSpeed * deltaTime;
+    if(direction == CameraMoveDirection::front)
+    {
+        m_position += m_front * vel;
+    }
+    if(direction == CameraMoveDirection::back)
+    {
+        m_position -= m_front * vel;
+    }
+    if(direction == CameraMoveDirection::right)
+    {
+        m_position += m_right * vel;
+    }
+    if(direction == CameraMoveDirection::left)
+    {
+        m_position -= m_right * vel;
+    }
 }
 
 float Camera::zoom() const

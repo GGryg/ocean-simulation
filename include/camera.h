@@ -4,6 +4,14 @@
 #include <glm/glm.hpp>
 
 
+enum class CameraMoveDirection
+{
+    front,
+    back,
+    right,
+    left
+};
+
 // Implementation of camera using Euler's angles
 class Camera
 {
@@ -13,6 +21,7 @@ public:
     glm::mat4 getViewMat() const;
 
     void processMouse(float xoffset, float yoffset);
+    void processKeyboard(float deltaTime, CameraMoveDirection direction);
 
     float zoom() const;
     const glm::vec3& position() const;
