@@ -91,7 +91,7 @@ void Window::init()
     }
 
     glfwMakeContextCurrent(m_window);
-    glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     int version = gladLoadGL(glfwGetProcAddress);
     if(!version)
