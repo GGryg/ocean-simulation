@@ -102,6 +102,13 @@ void Texture::clampToEdge()
     glTexParameteri(m_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
+void Texture::clampToEdgeCube()
+{
+    glTexParameteri(m_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(m_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(m_target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+}
+
 void Texture::repeat()
 {
     glTexParameteri(m_target, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -127,4 +134,19 @@ void Texture::allocateStorage(GLuint levels)
 void Texture::texImage2D()
 {
     glTexImage2D(m_target, 0, m_internalFormat, m_width, m_height, 0, m_imageFormat, GL_FLOAT, NULL);
+}
+
+void Texture::texImageCubemap(GLenum target, unsigned char* data)
+{
+    glTexImage2D(target, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+}
+
+void Texture::setWidth(GLuint width)
+{
+    m_width = width;
+}
+
+void Texture::setHeight(GLuint height)
+{
+    m_height = height;
 }

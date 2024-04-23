@@ -81,3 +81,30 @@ std::unique_ptr<Texture> ResourceLoader::loadTexture(const std::string& textureF
 
     return std::move(texture);
 }
+
+std::unique_ptr<Texture> ResourceLoader::loadCubemap(const std::vector<std::string>& facesPath)
+{
+    Logger::get().log("Loading cubemap texture"); 
+    
+    GLint width;
+    GLint height;
+    GLint nrChannels;
+    std::unique_ptr<Texture> texture = std::make_unique<Texture>(GL_TEXTURE_CUBE_MAP, width, height);
+    texture->bind();
+    for(GLuint i = 0; i < facesPath.size(); ++i)
+    {
+        unsigned char* data = stbi_load(facesPath[i].c_str(), &width, &height, &nrChannels, 0);
+        texture->setWidth(width);
+        texture->setHeight(height);
+        if(!data)
+        {
+            Logger::get().log("TEXTURE: Failed to load cubemap texture: " + facesPath[i], true);
+            return nullptr;
+        }
+
+        texture->texImageCubemap(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, data);
+        stbi_image_free(data);
+    }
+
+    return std::move(texture);
+}

@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "shader.h"
 #include "texture.h"
@@ -26,6 +27,7 @@ public:
     std::unique_ptr<Shader> loadShader(const std::string& computeShaderFile);
 
     std::unique_ptr<Texture> loadTexture(const std::string& textureFile, bool alpha);
+    std::unique_ptr<Texture> loadCubemap(const std::vector<std::string>& facesPath);
 
 private:
     ResourceLoader() = default;

@@ -22,6 +22,7 @@
 #include "window.h"
 #include "buffers.h"
 #include "ocean.h"
+#include "skybox.h"
 
 Camera camera(glm::vec3(0.0f, 16.0f, 30.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 float lastX;
@@ -100,11 +101,15 @@ int main()
     lastY = window.height() / 2.0f;
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glDisable(GL_BLEND);
+    //glEnable(GL_CULL_FACE);
+    //glDisable(GL_BLEND);
 
     
-    std::unique_ptr<Shader> shader = ResourceLoader::get().loadShader("shaders/ocean_vs.glsl", "shaders/ocean_fs.glsl");
+    std::unique_ptr<Shader> shader = ResourceLoader::get().loadShader("shaders/ocean_vs.glsl", "shaders/ocean_fs2.glsl");
+    if(!shader->isValid())
+    {
+        return 1;
+    }
     shader->use();
     
     constexpr int N = 256; // MUST BE A POWER OF 2
@@ -114,6 +119,7 @@ int main()
     float length = 1000;
 
     Ocean ocean{N, amplitute, windSpeed, windDirection, length};
+    Skybox skybox;
 
     std::unique_ptr<Shader> tShader = ResourceLoader::get().loadShader("shaders/testTex.vs", "shaders/testTex.fs");
 
@@ -143,6 +149,14 @@ int main()
     tShader->setInt("texture1", 0);
 
     glm::vec3 lightPosition{1.2f, 250.0f, 2.0f};
+
+    glm::vec3 scatterColor(0.016000003f, 0.07359998f, 0.16f);
+    glm::vec3 bubbleColor(0.0f, 0.02f, 0.015999999f);
+    float bubbleDensity = 1.0f;
+    float wavePeakScatterStrength = 1.0f;
+    float scatterStrength = 1.0f;
+    float scatterShadowStrength = 0.5f;
+    float heightWave = 1.0f;
 
 
     IMGUI_CHECKVERSION();
@@ -200,7 +214,7 @@ int main()
         shader->setVec3("lightPosition", lightPosition);
         shader->setVec3("viewPosition", camera.position());
 
-        shader->setVec3("u_albedo", glm::vec3(0.1333f, 0.5078f, 1.0f));
+        shader->setVec3("u_albedo", glm::vec3(0.023f, 0.2578f, 0.449f));
         shader->setFloat("u_roughness", 0.35f);
         shader->setFloat("u_metalness", 0.0f);
         shader->setFloat("u_ao", 1.0f);
@@ -213,9 +227,17 @@ int main()
         shader->setFloat("u2_heightMax", 10.0f);
         shader->setFloat("u2_heightMin", -10.0f);
 
+        shader->setVec3("scatterColor", scatterColor);
+        shader->setVec3("bubbleColor", bubbleColor);
+        shader->setFloat("bubbleDensity", bubbleDensity);
+        shader->setFloat("wavePeakScatterStrength", wavePeakScatterStrength);
+        shader->setFloat("scatterStrength", scatterStrength);
+        shader->setFloat("scatterShadowStrength", scatterShadowStrength);
+        shader->setFloat("height", heightWave);
+
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glPatchParameteri(GL_PATCH_VERTICES, 3);
+        //glPatchParameteri(GL_PATCH_VERTICES, 3);
         glDrawElements(GL_TRIANGLES, ocean.m_ebo->count(), GL_UNSIGNED_INT, nullptr);
         //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         
@@ -233,6 +255,9 @@ int main()
         //va.bind();
         //glDrawElements(GL_TRIANGLES, eb.count(), GL_UNSIGNED_INT, nullptr);
         //break;
+
+        view = glm::mat4(glm::mat3(camera.getViewMat()));
+        skybox.draw(view, projection);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -262,7 +287,15 @@ int main()
             {
                 ocean.setLength(length);
             }
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            
+            ImGui::InputFloat("Height", &heightWave);
+            ImGui::ColorEdit3("Scatter color", glm::value_ptr(scatterColor));
+            ImGui::ColorEdit3("Bubble color", glm::value_ptr(bubbleColor));
+            ImGui::InputFloat("Bubble density", &bubbleDensity);
+            ImGui::InputFloat("Wave peak scatter strength", &wavePeakScatterStrength);
+            ImGui::InputFloat("Scatter strength", &scatterStrength);
+            ImGui::InputFloat("Scatter shadow strength", &scatterShadowStrength);
+
+            //ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            
             ImGui::ColorEdit3("clear color", (float*)&clear_color);
 
             if (ImGui::Button("Button"))
@@ -276,7 +309,6 @@ int main()
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 
         window.swapBuffers();
         window.pollEvents();

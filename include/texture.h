@@ -27,6 +27,7 @@ public:
 
     void clampToBorder();
     void clampToEdge();
+    void clampToEdgeCube();
     void repeat();
     void mirrorRepeat();
     
@@ -34,6 +35,10 @@ public:
 
     void allocateStorage(GLuint levels);
     void texImage2D();
+    void texImageCubemap(GLenum target, unsigned char* data);
+
+    void setWidth(GLuint width);
+    void setHeight(GLuint height);
 
 private:
     GLuint m_id;
