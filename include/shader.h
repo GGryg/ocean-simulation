@@ -25,6 +25,7 @@ public:
     Shader() {}
 
     void use() const;
+    bool isValid() const;
 
     void setInt(const std::string& name, int n) const;
     void setFloat(const std::string& name, float v) const;
@@ -38,6 +39,7 @@ private:
 
     GLuint m_id{};
     ShaderType m_type{};
+    bool m_valid;
 };
 
 #endif

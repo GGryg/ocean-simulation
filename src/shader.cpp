@@ -3,6 +3,7 @@
 
 Shader::Shader(const std::string& vertexShaderSource, const std::string& framgnetShaderSource)
     : m_type{ShaderType::normal}
+    , m_valid{true}
 {
     m_id = glCreateProgram();
     GLuint vertexShader = compile(vertexShaderSource, GL_VERTEX_SHADER);
@@ -33,6 +34,11 @@ Shader::Shader(const std::string& computeShaderSource)
 void Shader::use() const
 {
     glUseProgram(m_id);
+}
+
+bool Shader::isValid() const
+{
+    return m_valid;
 }
 
 void Shader::setInt(const std::string& name, int n) const
@@ -83,6 +89,7 @@ void Shader::checkErrors(GLuint shader, ErrorType type)
         glGetProgramiv(shader, GL_LINK_STATUS, &success);
         if(!success)
         {
+            m_valid = false;
             glGetProgramInfoLog(shader, 1024, nullptr, infoLog);
             Logger::get().log("Problem with program linking", true);
             Logger::get().log(infoLog, true);
@@ -93,6 +100,7 @@ void Shader::checkErrors(GLuint shader, ErrorType type)
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if(!success)
         {
+            m_valid = false;
             glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
             Logger::get().log("Problem with compiling shader", true);
             Logger::get().log(infoLog, true);
