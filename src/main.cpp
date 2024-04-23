@@ -65,13 +65,6 @@ void processInput(Window& window)
     }
 }
 
-
-
-struct Uniform
-{
-    glm::mat4 view_proj;
-};
-
 void mosueCallback(GLFWwindow* window, double xPosIn, double yPosIn)
 {
     if(cameraMode)
@@ -106,38 +99,13 @@ int main()
     lastX = window.width() / 2.0f;
     lastY = window.height() / 2.0f;
 
-    /*
-    std::vector<GLfloat> positions = {
-        // positions            colors
-         0.5f, -0.5f, 0.0f,     0.3f, 0.6f, 0.9f, // bottom right
-        -0.5f, -0.5f, 0.0f,     0.3f, 0.6f, 0.9f, // bottom left
-        -0.5f,  0.5f, 0.0f,     0.3f, 0.6f, 0.9f, // upp left
-        -0.5f,  0.5f, 0.0f,     0.3f, 0.6f, 0.9f, // upp left
-         0.5f,  0.5f, 0.0f,     0.3f, 0.6f, 0.9f, // upp right
-         0.5f, -0.5f, 0.0f,     0.3f, 0.6f, 0.9f, // bottom right
-    };
-    */
-    //glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_CULL_FACE);
-    //glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glDisable(GL_BLEND);
 
     
     std::unique_ptr<Shader> shader = ResourceLoader::get().loadShader("shaders/ocean_vs.glsl", "shaders/ocean_fs.glsl");
     shader->use();
-    
-    //VArray vao;
-    //VBuffer vbo;
-    
-    //VBuffer vbo{positions.data(), positions.size() * sizeof(GLfloat), GL_STATIC_DRAW};
-    //VBufferLayout layout;
-    //layout.addElement<GLfloat>(3);
-    //layout.addElement<GLfloat>(3);
-    //vao.addBuffer(vbo, layout);
-    
-    //Shader shader = ResourceManager::get().loadShader("basic", "shaders/triangle/vert.vs", "shaders/triangle/frag.fs");
-    
-    //vbo.unbind();
-    //vao.unbind();
     
     constexpr int N = 256; // MUST BE A POWER OF 2
     float amplitute = 5.0f;
@@ -147,24 +115,6 @@ int main()
 
     Ocean ocean{N, amplitute, windSpeed, windDirection, length};
 
-    //vao.bind();
-    //vbo.addData(ocean.m_vertices.data(), ocean.m_vertices.size() * sizeof(OceanVertex), GL_STATIC_DRAW);
-    //VBufferLayout layout;
-    //layout.addElement<GLfloat>(3);
-    //layout.addElement<GLfloat>(2);
-    //m_vao.bind();
-    //vbo.bind();
-    //VBufferLayout elements;
-    //elements.emplace_back(3, GL_FLOAT, GL_FALSE, offsetof(OceanVertex, vertexPosition));
-    //elements.emplace_back(2, GL_FLOAT, GL_FALSE, offsetof(OceanVertex, texCoord));
-    //glEnableVertexAttribArray(0);
-    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(OceanVertex), (void*)0);
-    //glEnableVertexAttribArray(1);
-    //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(OceanVertex), (void*)sizeof(glm::vec3));
-    //vao.addBuffer(vbo, sizeof(OceanVertex), elements);
-    //EBuffer ebo = EBuffer{ocean.m_indices.data(), ocean.m_indices.size(), GL_STATIC_DRAW};
-
-    
     std::unique_ptr<Shader> tShader = ResourceLoader::get().loadShader("shaders/testTex.vs", "shaders/testTex.fs");
 
     float v[] = {
@@ -189,25 +139,20 @@ int main()
     va.addBuffer(&vb, 5 * sizeof(float), e);
     EBuffer eb = EBuffer{in, std::size(in), GL_STATIC_DRAW};
 
-    std::unique_ptr<UBuffer> ubo = std::make_unique<UBuffer>(sizeof(Uniform), GL_DYNAMIC_DRAW);
-
     tShader->use();
     tShader->setInt("texture1", 0);
 
-    glm::vec3 lightPosition{1.2f, 64.0f, 2.0f};
+    glm::vec3 lightPosition{1.2f, 250.0f, 2.0f};
 
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
-    // Setup Dear ImGui style
     ImGui::StyleColorsDark();
-    //ImGui::StyleColorsLight();
 
-    // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window.window(), true);
     ImGui_ImplOpenGL3_Init("#version 430");
 
@@ -222,13 +167,8 @@ int main()
 
         processInput(window);
         ocean.waving(deltaTime);
-        //glClearColor(.1f, .2f, .3f, 1.0f);
-        glClearColor(.2f, .4f, .6f, 1.0f);
+        glClearColor(.4f, .8f, .9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        //vao.bind();
-        //shader.use();
-        //glDrawArrays(GL_TRIANGLES, 0, 6);
         
         shader->use();
         //vao.bind();
@@ -253,17 +193,26 @@ int main()
         shader->setInt("u_normalMap", 3);
         ocean.m_normalMap->bindActive(3);
         shader->setFloat("u_displacement", 15.5f);
-        shader->setFloat("u_choppiness", 11.7f);
+        shader->setFloat("u_choppiness", 19.7f);
 
         // lightining/shadows
-        shader->setVec3("lightColor", glm::vec3(1000.0f, 1000.0f, 1000.0f));
+        shader->setVec3("lightColor", glm::vec3(50000.0f, 50000.0f, 50000.0f));
         shader->setVec3("lightPosition", lightPosition);
         shader->setVec3("viewPosition", camera.position());
 
-        shader->setVec3("u_albedo", glm::vec3(0.1333f, 0.4078f, 1.0f));
+        shader->setVec3("u_albedo", glm::vec3(0.1333f, 0.5078f, 1.0f));
         shader->setFloat("u_roughness", 0.35f);
         shader->setFloat("u_metalness", 0.0f);
         shader->setFloat("u_ao", 1.0f);
+
+
+
+        shader->setVec3("u2_ambient", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader->setVec3("u2_diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader->setVec3("u2_specular", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader->setFloat("u2_heightMax", 10.0f);
+        shader->setFloat("u2_heightMin", -10.0f);
+
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glPatchParameteri(GL_PATCH_VERTICES, 3);
@@ -289,12 +238,11 @@ int main()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {
             static float f = 0.0f;
             static int counter = 0;
 
-            ImGui::Begin("Ocean simulaton!");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin("Ocean simulaton!");
 
             ImGui::Text("Press to F to disable cursor and move camera");
             //ImGui::Checkbox("Another Window", &show_another_window);
@@ -314,10 +262,10 @@ int main()
             {
                 ocean.setLength(length);
             }
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            
+            ImGui::ColorEdit3("clear color", (float*)&clear_color);
 
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+            if (ImGui::Button("Button"))
                 counter++;
             ImGui::SameLine();
             ImGui::Text("counter = %d", counter);
@@ -326,7 +274,6 @@ int main()
             ImGui::End();
         }
 
-        // Rendering
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

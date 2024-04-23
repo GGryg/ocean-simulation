@@ -1,19 +1,5 @@
 #include "buffers.h"
 
-GLuint getSizeOfElement(const VBufferElement& element)
-{
-    if(element.type == GL_FLOAT)
-    {
-        return element.count * sizeof(GLfloat);
-    }
-    else if(element.type == GL_UNSIGNED_INT)
-    {
-        return element.count * sizeof(GLuint);
-    }
-
-    return 0;
-}
-
 VBuffer::VBuffer()
 {
     glGenBuffers(1, &m_id);

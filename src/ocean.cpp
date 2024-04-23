@@ -18,22 +18,7 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     , m_log_2_N{static_cast<int>(std::log(m_N) / std::log(2))}
     , m_recalculateSpectrum(false)
 {
-    //m_shader = ResourceManager::get().loadShader("ocean", "shaders/ocean.vs", "shaders/ocean.fs");
-    //m_shader.use();
     generateMesh();
-
-    //m_vao.bind();
-    //m_vbo.addData(m_vertices.data(), m_vertices.size() * sizeof(OceanVertex), GL_STATIC_DRAW);
-    //VBufferLayout layout;
-    //layout.addElement<GLfloat>(3);
-    //layout.addElement<GLfloat>(2);
-    //m_vao.bind();
-    //m_vbo.bind();
-    //glEnableVertexAttribArray(0);
-    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(OceanVertex), (void*)0);
-    //glEnableVertexAttribArray(1);
-    //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(OceanVertex), (void*)sizeof(glm::vec3));
-    //m_ebo = EBuffer{m_indices.data(), m_indices.size(), GL_STATIC_DRAW};
 
     m_vao = std::make_unique<VArray>();
     m_vao->bind();
@@ -72,11 +57,9 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
 
     m_tilde_h0k = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_tilde_h0k->bind();
-    //m_tilde_h0k->texImage2D();
     m_tilde_h0k->allocateStorage(1);
     m_tilde_h0k->clampToEdge();
     m_tilde_h0k->neareastFilter();
-    //m_tilde_h0k->allocateStorage(1);
     m_tilde_h0k->unbind();
     m_tilde_h0minusk = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_tilde_h0minusk->bind();
@@ -192,18 +175,6 @@ void Ocean::generateMesh()
             m_indices.push_back(idx5);
         }
     }    
-}
-
-float Ocean::phillipsSepctrum(int n, int m)
-{
-    // k = (kx, kz), kx = 2*PI*n/Lx, kz = 2PI*m/Lz
-    // -N/2 <= n < N/2, same with m
-    glm::vec2 k(std::numbers::pi_v<float> * 2 * n / m_length, std::numbers::pi_v<float> * 2 * m / m_length);
-    float kLength = glm::length(k);
-    float kLength_2 = kLength * kLength;
-    float kLength_4 = kLength_2 * kLength_2;
-    // Ph(k) = A * ((exp(-1/(kL)^2))/k^4) * |kconj dot wconj|^2
-    return 0.0f;
 }
 
 void Ocean::tilde_h0k()

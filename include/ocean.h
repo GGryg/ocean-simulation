@@ -13,25 +13,14 @@
 struct OceanVertex
 {
     glm::vec3 vertexPosition;
-    glm::vec2 texCoord; // maybe unused
+    glm::vec2 texCoord;
 };
-
-/*
-struct OceanVertexHelper
-{
-    GLfloat h_x, h_y, h_z;
-    GLfloat h_conj_x, hconj_y, hconj_z;
-    GLfloat ox, oy, oz;
-};
-*/
 
 class Ocean
 {
 public:
     Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t);
     ~Ocean();
-
-    [[deprecated("Moved to GPU calculaction, use tilde_h0k")]] float phillipsSepctrum(int n, int m);
 
     void tilde_h0k();
     void tilde_hkt(float deltaTime);
