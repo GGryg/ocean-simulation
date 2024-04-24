@@ -68,6 +68,7 @@ add_executable(${CMAKE_PROJECT_NAME}
                                     "src/ocean.cpp"
                                     "src/camera.cpp"
                                     "src/texture.cpp"
+                                    "src/skybox.cpp"
                                     ${IMGUI_GLOB}
 )
 
