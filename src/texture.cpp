@@ -42,31 +42,31 @@ void Texture::generate(unsigned char* data)
     glBindTexture(m_target, 0);
 }
 
-void Texture::bindActive(GLuint unit)
+void Texture::bindActive(GLuint unit) const
 {
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(m_target, m_id);
 }
 
-void Texture::bind()
+void Texture::bind() const
 {
     glBindTexture(m_target, m_id);
 }
 
-void Texture::bindImage(GLuint unit, GLuint levels, GLuint layer, GLenum access)
+void Texture::bindImage(GLuint unit, GLuint levels, GLuint layer, GLenum access) const
 {
     bindActive(unit);
     glBindImageTexture(unit, m_id, levels, GL_FALSE, 0, access, m_internalFormat);
 }
 
 
-void Texture::unbindActive(GLuint unit)
+void Texture::unbindActive(GLuint unit) const
 {
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(m_target, 0);
 }
 
-void Texture::unbind()
+void Texture::unbind() const
 {
     glBindTexture(m_target, 0);
 }
@@ -121,7 +121,7 @@ void Texture::mirrorRepeat()
     glTexParameteri(m_target, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 }
 
-void Texture::activate(GLuint unit)
+void Texture::activate(GLuint unit) const
 {
     glActiveTexture(GL_TEXTURE0 + unit);
 }

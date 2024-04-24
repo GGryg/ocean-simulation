@@ -15,11 +15,11 @@ public:
 
     void generate(unsigned char* data);
 
-    void bindActive(GLuint unit);
-    void bind();
-    void bindImage(GLuint unit, GLuint levels, GLuint layer, GLenum access);
-    void unbindActive(GLuint unit);
-    void unbind();
+    void bindActive(GLuint unit) const;
+    void bind() const;
+    void bindImage(GLuint unit, GLuint levels, GLuint layer, GLenum access) const;
+    void unbindActive(GLuint unit) const;
+    void unbind() const;
 
     void neareastFilter();
     void bilinearFilter();
@@ -31,7 +31,7 @@ public:
     void repeat();
     void mirrorRepeat();
     
-    void activate(GLuint unit);
+    void activate(GLuint unit) const;
 
     void allocateStorage(GLuint levels);
     void texImage2D();
