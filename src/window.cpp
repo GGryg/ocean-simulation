@@ -139,11 +139,6 @@ const std::string& Window::title() const
 void Window::setViewport()
 {
     glViewport(0, 0, m_width, m_height);
-    GLenum error = glGetError();
-    if(error != GL_NO_ERROR)
-    {
-        std::cerr << glGetString(error) << '\n';
-    }
 }
 
 bool Window::isOpen() const
