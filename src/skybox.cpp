@@ -34,6 +34,11 @@ void Skybox::draw(const glm::mat4& view, const glm::mat4& projection) const
     glDepthFunc(GL_LESS);
 }
 
+const std::unique_ptr<Texture>& Skybox::texture() const
+{
+    return m_texture;
+}
+
 void Skybox::createBox()
 {
     m_vertices = {

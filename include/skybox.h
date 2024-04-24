@@ -16,6 +16,8 @@ class Skybox
 public:
     Skybox();
 
+    const std::unique_ptr<Texture>& texture() const;
+
     void draw(const glm::mat4& view, const glm::mat4& projection) const;
 private:
     void createBox();
