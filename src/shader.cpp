@@ -21,6 +21,7 @@ Shader::Shader(const std::string& vertexShaderSource, const std::string& framgne
 
 Shader::Shader(const std::string& computeShaderSource)
     : m_type{ShaderType::compute}
+    , m_valid{true}
 {
     m_id = glCreateProgram();
     GLuint computeShader = compile(computeShaderSource, GL_COMPUTE_SHADER);
@@ -29,6 +30,12 @@ Shader::Shader(const std::string& computeShaderSource)
     glLinkProgram(m_id);
 
     glDeleteShader(computeShader);
+}
+
+Shader::Shader()
+    : m_valid{false}
+{
+
 }
 
 void Shader::use() const
