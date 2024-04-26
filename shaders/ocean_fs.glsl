@@ -23,6 +23,7 @@ uniform float u_wavePeakScatterStrength;
 uniform float u_scatterStrength;
 uniform float u_scatterShadowStrength;
 uniform float u_waveHeight;
+uniform float u_envLightStrength;
 
 float smithMaskingBeckmann(vec3 H, vec3 S, float roughness)
 {
@@ -77,10 +78,8 @@ void main()
     vec3 scatter = (k1 + k2) * u_scatterColor * u_sunIrradiance * (1.0/(1.0 + lightMask));
     scatter += k3 * u_scatterColor * u_sunIrradiance + k4 * u_bubbleColor * u_sunIrradiance;
 
-    float envLightStrength = 1.0;
-
     vec3 envReflection = texture(u_skybox, reflect(-V, N)).rgb;
-    envReflection *= envLightStrength;
+    envReflection *= u_envLightStrength;
 
     vec3 color = (1.0 - F) * scatter + specular + F * envReflection;
     FragColor = vec4(color, 1.0);

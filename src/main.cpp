@@ -158,6 +158,8 @@ int main()
     float scatterStrength = 1.0f;
     float scatterShadowStrength = 0.5f;
     float heightWave = 1.0f;
+    float roughness = 0.08f;
+    float envLightStrength = 1.0f;
 
     int tiling = 1;
 
@@ -217,7 +219,7 @@ int main()
         // lightining/shadows
         shader->setVec3("u_viewPosition", camera.position());
 
-        shader->setFloat("u_roughness", 0.08f);
+        shader->setFloat("u_roughness", roughness);
 
         shader->setVec3("u_sunDirection", sunDirection);
         shader->setVec3("u_sunIrradiance", sunIrradiance);
@@ -228,6 +230,7 @@ int main()
         shader->setFloat("u_scatterStrength", scatterStrength);
         shader->setFloat("u_scatterShadowStrength", scatterShadowStrength);
         shader->setFloat("u_waveHeight", heightWave);
+        shader->setFloat("u_envLightStrength", envLightStrength);
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         for(int j = 0; j < tiling; ++j)
@@ -270,33 +273,50 @@ int main()
             static int counter = 0;
 
             ImGui::Begin("Ocean simulaton!");
-
             ImGui::Text("Press to F to disable cursor and move camera");
-            //ImGui::Checkbox("Another Window", &show_another_window);
-            if(ImGui::InputFloat("Amplitude", &amplitute))
+
+            if(ImGui::BeginTabBar("Parameters", ImGuiTableFlags_None))
             {
-                ocean.setAmplitude(amplitute);
+                if(ImGui::BeginTabItem("Spectrum"))
+                {
+                    if(ImGui::InputFloat("Amplitude", &amplitute))
+                    {
+                        ocean.setAmplitude(amplitute);
+                    }
+                    if(ImGui::InputFloat("Wind speed", &windSpeed))
+                    {
+                        ocean.setWindSpeed(windSpeed);
+                    }
+                    if(ImGui::InputFloat2("Wind direction", glm::value_ptr(windDirection)))
+                    {
+                        ocean.setwindDirection(windDirection);
+                    }
+                    if(ImGui::InputFloat("Length", &length))
+                    {
+                        ocean.setLength(length);
+                    }
+                    ImGui::EndTabItem();
+                }
             }
-            if(ImGui::InputFloat("Wind speed", &windSpeed))
+            if(ImGui::BeginTabItem("PBR"))
             {
-                ocean.setWindSpeed(windSpeed);
+                ImGui::SliderFloat("Roughness", &roughness, 0.01f, 1.0f);
+                ImGui::InputFloat3("Sun direction", glm::value_ptr(sunDirection));
+                ImGui::InputFloat3("Sun Irradiance", glm::value_ptr(sunIrradiance));
+                ImGui::InputFloat("Wave height", &heightWave);
+                ImGui::ColorEdit3("Scatter color", glm::value_ptr(scatterColor), ImGuiColorEditFlags_Float);
+                ImGui::ColorEdit3("Bubble color", glm::value_ptr(bubbleColor), ImGuiColorEditFlags_Float);
+                ImGui::InputFloat("Bubble density", &bubbleDensity);
+                ImGui::InputFloat("Wave peak scatter strength", &wavePeakScatterStrength);
+                ImGui::InputFloat("Scatter strength", &scatterStrength);
+                ImGui::InputFloat("Scatter shadow strength", &scatterShadowStrength);
+                ImGui::InputFloat("Enviroment Light Strength", &envLightStrength);
+                ImGui::EndTabItem();
             }
-            if(ImGui::InputFloat2("Wind direction", glm::value_ptr(windDirection)))
-            {
-                ocean.setwindDirection(windDirection);
-            }
-            if(ImGui::InputFloat("Length", &length))
-            {
-                ocean.setLength(length);
-            }
+            ImGui::EndTabBar();
+            ImGui::Separator();
             ImGui::InputInt("Tiling", &tiling);
-            ImGui::InputFloat("Height", &heightWave);
-            ImGui::ColorEdit3("Scatter color", glm::value_ptr(scatterColor));
-            ImGui::ColorEdit3("Bubble color", glm::value_ptr(bubbleColor));
-            ImGui::InputFloat("Bubble density", &bubbleDensity);
-            ImGui::InputFloat("Wave peak scatter strength", &wavePeakScatterStrength);
-            ImGui::InputFloat("Scatter strength", &scatterStrength);
-            ImGui::InputFloat("Scatter shadow strength", &scatterShadowStrength);
+
 
             //ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            
             ImGui::ColorEdit3("clear color", (float*)&clear_color);
