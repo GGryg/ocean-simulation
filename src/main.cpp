@@ -62,6 +62,7 @@ void processInput(Window& window)
     if(glfwGetKey(window.window(), GLFW_KEY_G) == GLFW_PRESS)
     {
         cameraMode = false;
+        firstMouse = true;
         glfwSetInputMode(window.window(), GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
     }
 }
