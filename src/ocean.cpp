@@ -174,7 +174,7 @@ void Ocean::generateMesh()
             m_indices.push_back(idx4);
             m_indices.push_back(idx5);
         }
-    }    
+    }
 }
 
 void Ocean::tilde_h0k()
@@ -311,6 +311,10 @@ void Ocean::normalMap()
 
     m_normalMap_shader->setInt("u_dy", 1);
     m_dy->bindActive(1);
+    m_normalMap_shader->setInt("u_dx", 2);
+    m_dx->bindActive(2);
+    m_normalMap_shader->setInt("u_dz", 3);
+    m_dz->bindActive(3);
     
     m_normalMap_shader->setInt("u_N", m_N);
 
