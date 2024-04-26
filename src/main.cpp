@@ -101,17 +101,16 @@ int main()
     lastY = window.height() / 2.0f;
 
     glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_CULL_FACE);
-    //glDisable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
+    glDisable(GL_BLEND);
 
-    
-    std::unique_ptr<Shader> shader = ResourceLoader::get().loadShader("shaders/ocean_vs.glsl", "shaders/ocean_fs2.glsl");
+    std::unique_ptr<Shader> shader = ResourceLoader::get().loadShader("shaders/ocean_vs.glsl", "shaders/ocean_fs.glsl");
     if(!shader->isValid())
     {
         return 1;
     }
     shader->use();
-    
+
     constexpr int N = 256; // MUST BE A POWER OF 2
     float amplitute = 5.0f;
     float windSpeed = 500000.0f;
@@ -127,7 +126,7 @@ int main()
          0.35f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
          0.35f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
         -0.35f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
-        -0.35f,  0.5f, 0.0f,   0.0f, 1.0f  // top left 
+        -0.35f,  0.5f, 0.0f,   0.0f, 1.0f  // top left
     };
 
     GLuint in[] = {
@@ -148,8 +147,10 @@ int main()
     tShader->use();
     tShader->setInt("texture1", 0);
 
-    glm::vec3 lightPosition{1.2f, 250.0f, 2.0f};
+    glm::vec3 lightPosition{1.2f, 100.0f, 2.0f};
 
+    glm::vec3 sunDirection(-1.29f, -1.0f, 4.86f);
+    glm::vec3 sunIrradiance(1.0f, 0.694f, 0.32f);
     glm::vec3 scatterColor(0.016000003f, 0.07359998f, 0.16f);
     glm::vec3 bubbleColor(0.0f, 0.02f, 0.015999999f);
     float bubbleDensity = 1.0f;
@@ -158,6 +159,7 @@ int main()
     float scatterShadowStrength = 0.5f;
     float heightWave = 1.0f;
 
+    int tiling = 1;
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -183,20 +185,20 @@ int main()
         ocean.waving(deltaTime);
         glClearColor(.4f, .8f, .9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+
         shader->use();
         //vao.bind();
         ocean.draw(deltaTime, glm::vec3(1.0), glm::vec3(1.0), glm::mat4(1.0), glm::mat4(1.0), glm::mat4(1.0));
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
-        projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 1000.0f);
+        projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100000.0f);
         //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         view = camera.getViewMat();
         shader->setMat4("u_proj", projection);
         shader->setMat4("u_view", view);
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3{0.0f, -2.0f, 0.0f});
-        model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+        model = glm::translate(model, glm::vec3{0.0f, 0.0f, 0.0f});
+        //model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
         shader->setMat4("u_model", model);
         shader->setInt("u_dx", 0);
         ocean.m_dx->bindActive(0);
@@ -206,39 +208,39 @@ int main()
         ocean.m_dz->bindActive(2);
         shader->setInt("u_normalMap", 3);
         ocean.m_normalMap->bindActive(3);
+        shader->setInt("skybox", 4);
+        skybox.texture()->bindActive(4);
         shader->setFloat("u_displacement", 15.5f);
         shader->setFloat("u_choppiness", 19.7f);
+        shader->setVec3("u_cameraPosition", camera.position());
 
         // lightining/shadows
-        shader->setVec3("lightColor", glm::vec3(50000.0f, 50000.0f, 50000.0f));
-        shader->setVec3("lightPosition", lightPosition);
-        shader->setVec3("viewPosition", camera.position());
+        shader->setVec3("u_viewPosition", camera.position());
 
-        shader->setVec3("u_albedo", glm::vec3(0.023f, 0.2578f, 0.449f));
-        shader->setFloat("u_roughness", 0.35f);
-        shader->setFloat("u_metalness", 0.0f);
-        shader->setFloat("u_ao", 1.0f);
+        shader->setFloat("u_roughness", 0.08f);
 
-
-
-        shader->setVec3("u2_ambient", glm::vec3(1.0f, 1.0f, 1.0f));
-        shader->setVec3("u2_diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
-        shader->setVec3("u2_specular", glm::vec3(1.0f, 1.0f, 1.0f));
-        shader->setFloat("u2_heightMax", 10.0f);
-        shader->setFloat("u2_heightMin", -10.0f);
-
-        shader->setVec3("scatterColor", scatterColor);
-        shader->setVec3("bubbleColor", bubbleColor);
-        shader->setFloat("bubbleDensity", bubbleDensity);
-        shader->setFloat("wavePeakScatterStrength", wavePeakScatterStrength);
-        shader->setFloat("scatterStrength", scatterStrength);
-        shader->setFloat("scatterShadowStrength", scatterShadowStrength);
-        shader->setFloat("height", heightWave);
-
+        shader->setVec3("u_sunDirection", sunDirection);
+        shader->setVec3("u_sunIrradiance", sunIrradiance);
+        shader->setVec3("u_scatterColor", scatterColor);
+        shader->setVec3("u_bubbleColor", bubbleColor);
+        shader->setFloat("u_bubbleDensity", bubbleDensity);
+        shader->setFloat("u_wavePeakScatterStrength", wavePeakScatterStrength);
+        shader->setFloat("u_scatterStrength", scatterStrength);
+        shader->setFloat("u_scatterShadowStrength", scatterShadowStrength);
+        shader->setFloat("u_waveHeight", heightWave);
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        //glPatchParameteri(GL_PATCH_VERTICES, 3);
-        glDrawElements(GL_TRIANGLES, ocean.m_ebo->count(), GL_UNSIGNED_INT, nullptr);
+        for(int j = 0; j < tiling; ++j)
+        {
+            for(int i = 0; i < tiling; ++i)
+            {
+                model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+                model = glm::translate(model, glm::vec3(1024 * i, 0, 1024 * -j));
+                shader->setMat4("u_model", model);
+                glDrawElements(GL_TRIANGLES, ocean.m_ebo->count(), GL_UNSIGNED_INT, nullptr);
+            }
+        }
+        //
         //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         
         //tShader->use();
@@ -254,7 +256,7 @@ int main()
         //ocean.m_tilde_h0k->bindImage(0, 0, 0, GL_READ_ONLY);
         //va.bind();
         //glDrawElements(GL_TRIANGLES, eb.count(), GL_UNSIGNED_INT, nullptr);
-        //break;
+        //break;dfddfdf
 
         view = glm::mat4(glm::mat3(camera.getViewMat()));
         skybox.draw(view, projection);
@@ -287,6 +289,7 @@ int main()
             {
                 ocean.setLength(length);
             }
+            ImGui::InputInt("Tiling", &tiling);
             ImGui::InputFloat("Height", &heightWave);
             ImGui::ColorEdit3("Scatter color", glm::value_ptr(scatterColor));
             ImGui::ColorEdit3("Bubble color", glm::value_ptr(bubbleColor));
