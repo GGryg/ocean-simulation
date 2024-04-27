@@ -44,6 +44,7 @@ public:
     void calculateTwiddleFactor();
     void butterflyOperation(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& output);
     void normalMap();
+    void testFFT(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& output);
 
     int m_N{};
     int m_N1{};

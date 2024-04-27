@@ -8,6 +8,9 @@
 #include <cmath>
 #include <GLFW/glfw3.h>
 
+#include <glfft.hpp>
+#include <glfft_gl_interface.hpp>
+
 Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t)
     : m_N{N_t}
     , m_N1{N_t + 1}
@@ -108,15 +111,18 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
 
     m_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_dx->bind();
-    m_dx->allocateStorage(1);
+    //m_dx->allocateStorage(1);
+    m_dx->texImage2D();
     m_dx->unbind();
     m_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_dy->bind();
-    m_dy->allocateStorage(1);
+    //m_dy->allocateStorage(1);
+    m_dy->texImage2D();
     m_dy->unbind();
     m_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_dz->bind();
-    m_dz->allocateStorage(1);
+    //m_dz->allocateStorage(1);
+    m_dz->texImage2D();
     m_dz->unbind();
 
     m_normalMap_shader = ResourceLoader::get().loadShader("shaders/normal_map_cs.glsl");
@@ -322,6 +328,29 @@ void Ocean::normalMap()
     glFinish();
 }
 
+void Ocean::testFFT(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& output)
+{
+    GLFFT::FFTOptions options;
+    options.type.fp16 = false;
+    options.type.output_fp16 = false;
+    options.type.input_fp16 = false;
+    options.type.normalize = true;
+    GLFFT::GLContext context;
+
+    // doesn't work
+    GLFFT::FFT fft(&context, m_N, m_N, GLFFT::ComplexToComplex, GLFFT::Inverse, GLFFT::Image, GLFFT::Image, std::make_shared<GLFFT::ProgramCache>(), options);
+
+    GLFFT::GLBuffer adaptor_input(input->id());
+    GLFFT::GLBuffer adaptor_output(output->id());
+
+    GLFFT::CommandBuffer* cmd = context.request_command_buffer();
+    fft.process(cmd, &adaptor_output, &adaptor_input);
+    cmd->barrier();
+    context.submit_command_buffer(cmd);
+    context.wait_idle();
+
+}
+
 void Ocean::waving(float deltaTime)
 {
     if(m_recalculateSpectrum)
@@ -331,9 +360,13 @@ void Ocean::waving(float deltaTime)
     }
 
     tilde_hkt(deltaTime);
-    butterflyOperation(m_tilde_hkt_dy, m_dy);
-    butterflyOperation(m_tilde_hkt_dx, m_dx);
-    butterflyOperation(m_tilde_hkt_dz, m_dz);
+    // butterflyOperation(m_tilde_hkt_dy, m_dy);
+    // butterflyOperation(m_tilde_hkt_dx, m_dx);
+    // butterflyOperation(m_tilde_hkt_dz, m_dz);
+
+    testFFT(m_tilde_hkt_dy, m_dy);
+    testFFT(m_tilde_hkt_dx, m_dx);
+    testFFT(m_tilde_hkt_dz, m_dz);
 
     normalMap();
 }

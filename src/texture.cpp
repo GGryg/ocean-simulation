@@ -150,3 +150,8 @@ void Texture::setHeight(GLuint height)
 {
     m_height = height;
 }
+
+GLuint Texture::id() const
+{
+    return m_id;
+}
