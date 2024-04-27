@@ -10,3 +10,6 @@
 [submodule "libs/imgui"]
 	path = libs/imgui
 	url = https://github.com/ocornut/imgui
+[submodule "libs/glfft"]
+	path = libs/glfft
+	url = https://github.com/Themaister/GLFFT.git
