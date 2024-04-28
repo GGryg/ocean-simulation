@@ -40,6 +40,8 @@ public:
     void setWidth(GLuint width);
     void setHeight(GLuint height);
 
+    GLuint id() const;
+
 private:
     GLuint m_id;
     GLenum m_target;
