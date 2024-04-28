@@ -19,7 +19,7 @@ struct OceanVertex
 class Ocean
 {
 public:
-    Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t);
+    Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t, float l);
     ~Ocean();
 
     void tilde_h0k();
@@ -36,6 +36,7 @@ public:
     const glm::vec2& windDirection() const;
     void setLength(float length);
     float length() const;
+    void setL(float l);
 
 public:
     void generateMesh();
@@ -52,6 +53,7 @@ public:
     float m_windSpeed;
     glm::vec2 m_windDirection{};
     float m_length;
+    float m_l;
     int m_log_2_N;
 
     bool m_recalculateSpectrum;

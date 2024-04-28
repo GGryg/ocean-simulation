@@ -7,11 +7,10 @@
 #include <iostream>
 #include <cmath>
 #include <GLFW/glfw3.h>
-
 #include <glfft.hpp>
 #include <glfft_gl_interface.hpp>
 
-Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t)
+Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t, float l)
     : m_N{N_t}
     , m_N1{N_t + 1}
     , m_amplitude{amplitude_t}
@@ -20,6 +19,7 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     , m_length{length_t}
     , m_log_2_N{static_cast<int>(std::log(m_N) / std::log(2))}
     , m_recalculateSpectrum(false)
+    , m_l{l}
 {
     generateMesh();
 
@@ -197,6 +197,7 @@ void Ocean::tilde_h0k()
     m_tilde_h0k_shader->setVec2("u_WindDirection", m_windDirection);
     m_tilde_h0k_shader->setInt("u_N", m_N);
     m_tilde_h0k_shader->setInt("u_L", m_length);
+    m_tilde_h0k_shader->setFloat("u_l", m_l);
 
     m_tilde_h0k->bindImage(0, 0, 0, GL_WRITE_ONLY);
     m_tilde_h0minusk->bindImage(1, 0, 0, GL_WRITE_ONLY);
@@ -415,4 +416,10 @@ void Ocean::setLength(float length)
 float Ocean::length() const
 {
     return m_length;
+}
+
+void Ocean::setL(float l)
+{
+    m_l = l;
+    m_recalculateSpectrum = true;
 }
