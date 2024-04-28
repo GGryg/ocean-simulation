@@ -205,7 +205,7 @@ void Ocean::tilde_h0k()
     glFinish();
 }
 
-void Ocean::tilde_hkt(float deltaTime)
+void Ocean::tilde_hkt(float timeSpeed)
 {
     m_tilde_hkt_shader->use();
 
@@ -217,7 +217,7 @@ void Ocean::tilde_hkt(float deltaTime)
 
     m_tilde_hkt_shader->setInt("u_N", m_N);
     m_tilde_hkt_shader->setInt("u_L", m_length);
-    m_tilde_hkt_shader->setFloat("u_t", static_cast<float>(glfwGetTime()) * 2);
+    m_tilde_hkt_shader->setFloat("u_t", static_cast<float>(glfwGetTime()) * timeSpeed);
 
     glDispatchCompute(8, 8, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
@@ -324,7 +324,7 @@ void Ocean::normalMap()
     glFinish();
 }
 
-void Ocean::waving(float deltaTime)
+void Ocean::waving(float deltaTime, float timeSpeed)
 {
     if(m_recalculateSpectrum)
     {
@@ -332,7 +332,7 @@ void Ocean::waving(float deltaTime)
         m_recalculateSpectrum = false;
     }
 
-    tilde_hkt(deltaTime);
+    tilde_hkt(timeSpeed);
     butterflyOperation(m_tilde_hkt_dy, m_dy);
     butterflyOperation(m_tilde_hkt_dx, m_dx);
     butterflyOperation(m_tilde_hkt_dz, m_dz);
@@ -393,4 +393,20 @@ void Ocean::setL(float l)
 {
     m_l = l;
     m_recalculateSpectrum = true;
+}
+
+GLuint Ocean::texture(TextureVis textureVis) const
+{
+    switch (textureVis)
+    {
+        case HIILDE0K: return m_tilde_h0k->id();
+        case HIILDE0MINUSK: return m_tilde_h0minusk->id();
+        case HIILDEKTDX: return m_tilde_hkt_dx->id();
+        case HIILDEKTDY: return m_tilde_hkt_dy->id();
+        case HIILDEKTDZ: return m_tilde_hkt_dz->id();
+        case DX: return m_dx->id();
+        case DY: return m_dy->id();
+        case DZ: return m_dz->id();
+    }
+    return 0;
 }

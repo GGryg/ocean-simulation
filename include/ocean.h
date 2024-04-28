@@ -19,13 +19,24 @@ struct OceanVertex
 class Ocean
 {
 public:
+    enum TextureVis
+    {
+        HIILDE0K,
+        HIILDE0MINUSK,
+        HIILDEKTDX,
+        HIILDEKTDY,
+        HIILDEKTDZ,
+        DX,
+        DY,
+        DZ,
+    };
     Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t, float l);
     ~Ocean();
 
     void tilde_h0k();
-    void tilde_hkt(float deltaTime);
+    void tilde_hkt(float timeSpeed);
 
-    void waving(float deltaTime); // update
+    void waving(float deltaTime, float timeSpeed); // update
     void draw(float deltaTime, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model);
 
     void setAmplitude(float amplitude);
@@ -37,6 +48,8 @@ public:
     void setLength(float length);
     float length() const;
     void setL(float l);
+
+    GLuint texture(TextureVis textureVis) const;
 
 public:
     void generateMesh();

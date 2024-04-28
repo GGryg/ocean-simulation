@@ -114,42 +114,13 @@ int main()
 
     constexpr int N = 256; // MUST BE A POWER OF 2
     float amplitute = 5.0f;
-    float windSpeed = 500000.0f;
-    glm::vec2 windDirection{500.0f, 1000.0f};
+    float windSpeed = 50.0f;
+    glm::vec2 windDirection{1.0f, 1.0f};
     float length = 1000;
     float l = 1;
 
-    Ocean ocean{N, amplitute, windSpeed, windDirection, length, l};//
+    Ocean ocean{N, amplitute, windSpeed, windDirection, length, l};
     Skybox skybox;
-
-    std::unique_ptr<Shader> tShader = ResourceLoader::get().loadShader("shaders/testTex.vs", "shaders/testTex.fs");
-
-    float v[] = {
-         0.35f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
-         0.35f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.35f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
-        -0.35f,  0.5f, 0.0f,   0.0f, 1.0f  // top left
-    };
-
-    GLuint in[] = {
-        0, 1, 3,
-        1, 2, 3
-    };
-    tShader->use();
-    VArray va;
-    VBuffer vb;
-    va.bind();
-    vb.addData(v, sizeof(v), GL_STATIC_DRAW);
-    VBufferLayout e;
-    e.emplace_back(3, GL_FLOAT, GL_FALSE, 0);
-    e.emplace_back(2, GL_FLOAT, GL_FALSE, 3*sizeof(float));
-    va.addBuffer(&vb, 5 * sizeof(float), e);
-    EBuffer eb = EBuffer{in, std::size(in), GL_STATIC_DRAW};
-
-    tShader->use();
-    tShader->setInt("texture1", 0);
-
-    glm::vec3 lightPosition{1.2f, 100.0f, 2.0f};
 
     glm::vec3 sunDirection(-1.29f, -1.0f, 4.86f);
     glm::vec3 sunIrradiance(1.0f, 0.694f, 0.32f);
@@ -166,6 +137,10 @@ int main()
     float displacement = 15.5f;
 
     int tiling = 1;
+    bool visualize = false;
+    int textureSelection = Ocean::HIILDE0K;
+    const char* textureNames = "Phillips spectrum k\0Phillips spectrum -k\0tilde h dx\0tilde h dy\0tilde h dz\0dx\0dy\0dz\0";
+    float timeSpeed = 1.0f;
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -178,8 +153,6 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window.window(), true);
     ImGui_ImplOpenGL3_Init("#version 430");
 
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
     while(window.isOpen())
     {
 
@@ -188,7 +161,7 @@ int main()
         lastFrame = currentFrame;
 
         processInput(window);
-        ocean.waving(deltaTime);
+        ocean.waving(deltaTime, timeSpeed);
         glClearColor(.4f, .8f, .9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -249,21 +222,6 @@ int main()
         }
         //
         //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        
-        //tShader->use();
-        //testTex->bind(0);
-        //tilde_h0k->bindActive(0);
-        //ocean.m_twiddleFactors->bindActive(0);
-        //ocean.m_twiddleFactors->bindImage(0, 0, 0, GL_READ_ONLY);
-        //ocean.m_dy->bindActive(0);
-        //ocean.m_dy->bindImage(0, 0, 0, GL_READ_ONLY);
-        //ocean.m_pingPong->bindImage(0, 0, 0, GL_READ_ONLY);
-        //ocean.m_tilde_hkt_dy->bindImage(0, 0, 0, GL_READ_ONLY);
-        //ocean.m_normalMap->bindImage(0, 0, 0, GL_READ_ONLY);
-        //ocean.m_tilde_h0k->bindImage(0, 0, 0, GL_READ_ONLY);
-        //va.bind();
-        //glDrawElements(GL_TRIANGLES, eb.count(), GL_UNSIGNED_INT, nullptr);
-        //break;dfddfdf
 
         view = glm::mat4(glm::mat3(camera.getViewMat()));
         skybox.draw(view, projection);
@@ -291,7 +249,7 @@ int main()
                     {
                         ocean.setWindSpeed(windSpeed);
                     }
-                    if(ImGui::SliderFloat2("Wind direction", glm::value_ptr(windDirection), 0.0f, 1.0f))
+                    if(ImGui::SliderFloat2("Wind direction", glm::value_ptr(windDirection), -1.0f, 1.0f))
                     {
                         ocean.setwindDirection(windDirection);
                     }
@@ -305,9 +263,6 @@ int main()
                     }
                     ImGui::InputFloat("Displacement", &displacement);
                     ImGui::InputFloat("Choppiness", &choppiness);
-                    ImGui::Image((void*)ocean.m_dy->id(), ImVec2(256, 256));
-                    ImGui::Image((void*)ocean.m_tilde_hkt_dy->id(), ImVec2(256, 256));
-                    ImGui::Image((void*)ocean.m_tilde_h0k->id(), ImVec2(256, 256));//
                     ImGui::EndTabItem();
                 }
             }
@@ -328,19 +283,21 @@ int main()
             }
             ImGui::EndTabBar();
             ImGui::Separator();
+            ImGui::Text("Other options");
             ImGui::InputInt("Tiling", &tiling);
-
-
-            //ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-            ImGui::ColorEdit3("clear color", (float*)&clear_color);
-
-            if (ImGui::Button("Button"))
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
+            ImGui::InputFloat("Speed", &timeSpeed);
+            ImGui::Checkbox("Visualize textures",&visualize);
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
             ImGui::End();
+
+            if(visualize)
+            {
+                ImGui::Begin("Visualize texture");
+                ImGui::Combo("Select texture", &textureSelection, textureNames);
+                ImGui::Image(reinterpret_cast<void*>(ocean.texture(static_cast<Ocean::TextureVis>(textureSelection))), ImVec2(N, N));
+                ImGui::End();
+            }
         }
 
         ImGui::Render();
