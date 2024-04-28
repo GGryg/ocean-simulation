@@ -161,6 +161,8 @@ int main()
     float heightWave = 1.0f;
     float roughness = 0.08f;
     float envLightStrength = 1.0f;
+    float choppiness = 19.7f;
+    float displacement = 15.5f;
 
     int tiling = 1;
 
@@ -213,8 +215,8 @@ int main()
         ocean.m_normalMap->bindActive(3);
         shader->setInt("skybox", 4);
         skybox.texture()->bindActive(4);
-        shader->setFloat("u_displacement", 15.5f);
-        shader->setFloat("u_choppiness", 19.7f);
+        shader->setFloat("u_displacement", displacement);
+        shader->setFloat("u_choppiness", choppiness);
         shader->setVec3("u_cameraPosition", camera.position());
 
         // lightining/shadows
@@ -296,6 +298,8 @@ int main()
                     {
                         ocean.setLength(length);
                     }
+                    ImGui::InputFloat("Displacement", &displacement);
+                    ImGui::InputFloat("Choppiness", &choppiness);
                     ImGui::EndTabItem();
                 }
             }
