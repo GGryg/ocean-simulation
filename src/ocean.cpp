@@ -73,19 +73,19 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
 
     m_tilde_hkt_shader = ResourceLoader::get().loadShader("shaders/h_k_t_cs.glsl");
 
-    m_tilde_hkt_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_tilde_hkt_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RG);
     m_tilde_hkt_dx->bind();
     m_tilde_hkt_dx->allocateStorage(1);
     m_tilde_hkt_dx->repeat();
     m_tilde_hkt_dx->bilinearFilter();
     m_tilde_hkt_dx->unbind();
-    m_tilde_hkt_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_tilde_hkt_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RG);
     m_tilde_hkt_dy->bind();
     m_tilde_hkt_dy->allocateStorage(1);
     m_tilde_hkt_dy->repeat();
     m_tilde_hkt_dy->bilinearFilter();
     m_tilde_hkt_dy->unbind();
-    m_tilde_hkt_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_tilde_hkt_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RG);
     m_tilde_hkt_dz->bind();
     m_tilde_hkt_dz->allocateStorage(1);
     m_tilde_hkt_dz->repeat();
@@ -109,20 +109,17 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_pingPong->allocateStorage(1);
     m_pingPong->unbind();
 
-    m_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_R32F, GL_RED);
     m_dx->bind();
-    //m_dx->allocateStorage(1);
-    m_dx->texImage2D();
+    m_dx->allocateStorage(1);
     m_dx->unbind();
-    m_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_R32F, GL_RED);
     m_dy->bind();
-    //m_dy->allocateStorage(1);
-    m_dy->texImage2D();
+    m_dy->allocateStorage(1);
     m_dy->unbind();
-    m_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_R32F, GL_RED);
     m_dz->bind();
-    //m_dz->allocateStorage(1);
-    m_dz->texImage2D();
+    m_dz->allocateStorage(1);
     m_dz->unbind();
 
     m_normalMap_shader = ResourceLoader::get().loadShader("shaders/normal_map_cs.glsl");
@@ -338,10 +335,10 @@ void Ocean::testFFT(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& o
     GLFFT::GLContext context;
 
     // doesn't work
-    GLFFT::FFT fft(&context, m_N, m_N, GLFFT::ComplexToComplex, GLFFT::Inverse, GLFFT::Image, GLFFT::Image, std::make_shared<GLFFT::ProgramCache>(), options);
+    GLFFT::FFT fft(&context, m_N, m_N, GLFFT::ComplexToReal, GLFFT::Inverse, GLFFT::Image, GLFFT::ImageReal, std::make_shared<GLFFT::ProgramCache>(), options);
 
-    GLFFT::GLBuffer adaptor_input(input->id());
-    GLFFT::GLBuffer adaptor_output(output->id());
+    GLFFT::GLTexture adaptor_input(input->id());
+    GLFFT::GLTexture adaptor_output(output->id());
 
     GLFFT::CommandBuffer* cmd = context.request_command_buffer();
     fft.process(cmd, &adaptor_output, &adaptor_input);
