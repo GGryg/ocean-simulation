@@ -13,6 +13,7 @@ uniform float u_windSpeed;
 uniform vec2 u_WindDirection;
 uniform int u_N;
 uniform int u_L;
+uniform float u_l;
 
 layout (binding = 0, rgba32f) writeonly uniform image2D tilde_h_0_k;
 layout (binding = 1, rgba32f) writeonly uniform image2D tilde_h_0_minusk;
@@ -38,8 +39,14 @@ float phillipsSecptrum(vec2 k, float k_magnitute, float L_phillips)
 {
     float k_magnitute_2 = k_magnitute * k_magnitute;
     float k_magnitute_4 = k_magnitute_2 * k_magnitute_2;
+    float KdotW = dot(normalize(k), normalize(u_WindDirection));
     // Ph(k) = A * (exp(-1/(k*L)^2) / k^4) * |khat dot what|^2
-    return u_amplitude * ((exp(-1.0 / (k_magnitute_2 * L_phillips * L_phillips))) / k_magnitute_4) * pow(dot(normalize(k), normalize(u_WindDirection)), 2);
+    float Phk = u_amplitude * ((exp(-1.0 / (k_magnitute_2 * L_phillips * L_phillips))) / k_magnitute_4) * pow(abs(KdotW), 8);
+    if(KdotW < 0.0)
+    {
+        Phk *= 0.1;
+    }
+    return Phk * exp(-k_magnitute_2 * u_l * u_l);
 }
 
 // Based on Simulation Ocean Water by Jerry Tessendorf
