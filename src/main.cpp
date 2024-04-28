@@ -117,8 +117,9 @@ int main()
     float windSpeed = 500000.0f;
     glm::vec2 windDirection{500.0f, 1000.0f};
     float length = 1000;
+    float l = 1;
 
-    Ocean ocean{N, amplitute, windSpeed, windDirection, length};
+    Ocean ocean{N, amplitute, windSpeed, windDirection, length, l};//
     Skybox skybox;
 
     std::unique_ptr<Shader> tShader = ResourceLoader::get().loadShader("shaders/testTex.vs", "shaders/testTex.fs");
@@ -290,16 +291,23 @@ int main()
                     {
                         ocean.setWindSpeed(windSpeed);
                     }
-                    if(ImGui::InputFloat2("Wind direction", glm::value_ptr(windDirection)))
+                    if(ImGui::SliderFloat2("Wind direction", glm::value_ptr(windDirection), 0.0f, 1.0f))
                     {
                         ocean.setwindDirection(windDirection);
                     }
-                    if(ImGui::InputFloat("Length", &length))
+                    if(ImGui::SliderFloat("Length", &length, 100.0f, 1000.0f))
                     {
                         ocean.setLength(length);
                     }
+                    if(ImGui::SliderFloat("Supressor factor", &l, 0.0f, 50.0f))
+                    {
+                        ocean.setL(l);
+                    }
                     ImGui::InputFloat("Displacement", &displacement);
                     ImGui::InputFloat("Choppiness", &choppiness);
+                    ImGui::Image((void*)ocean.m_dy->id(), ImVec2(256, 256));
+                    ImGui::Image((void*)ocean.m_tilde_hkt_dy->id(), ImVec2(256, 256));
+                    ImGui::Image((void*)ocean.m_tilde_h0k->id(), ImVec2(256, 256));//
                     ImGui::EndTabItem();
                 }
             }
@@ -323,7 +331,7 @@ int main()
             ImGui::InputInt("Tiling", &tiling);
 
 
-            //ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            
+            //ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
             ImGui::ColorEdit3("clear color", (float*)&clear_color);
 
             if (ImGui::Button("Button"))
