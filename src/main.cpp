@@ -14,8 +14,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
-
 #include "camera.h"
 #include "logger.h"
 #include "resourceLoader.h"
@@ -23,6 +21,7 @@
 #include "buffers.h"
 #include "ocean.h"
 #include "skybox.h"
+#include "shaderException.h"
 
 Camera camera(glm::vec3(0.0f, 16.0f, 30.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 float lastX;
@@ -120,6 +119,16 @@ int main()
     float l = 1;
 
     Ocean ocean{N, amplitute, windSpeed, windDirection, length, l};
+    try
+    {
+        ocean.prepareResources();
+    }
+    catch (const ShaderException& ex)
+    {
+        std::cout<<"Help\n";
+        Logger::get().log(ex.what(), true);
+        return -1;
+    }
     Skybox skybox;
 
     glm::vec3 sunDirection(-1.29f, -1.0f, 4.86f);
@@ -139,7 +148,7 @@ int main()
     int tiling = 1;
     bool visualize = false;
     int textureSelection = Ocean::HIILDE0K;
-    const char* textureNames = "Phillips spectrum k\0Phillips spectrum -k\0tilde h dx\0tilde h dy\0tilde h dz\0dx\0dy\0dz\0";
+    const char* textureNames = "Phillips spectrum k\0Phillips spectrum -k\0tilde h dx\0tilde h dy\0tilde h dz\0dx\0dy\0dz\0Normal map\0";
     float timeSpeed = 1.0f;
 
     IMGUI_CHECKVERSION();
@@ -261,8 +270,14 @@ int main()
                     {
                         ocean.setL(l);
                     }
-                    ImGui::InputFloat("Displacement", &displacement);
-                    ImGui::InputFloat("Choppiness", &choppiness);
+                    if(ImGui::InputFloat("Displacement", &displacement))
+                    {
+                        ocean.setDisplacementScale(displacement);
+                    }
+                    if(ImGui::InputFloat("Choppiness", &choppiness))
+                    {
+                        ocean.setChoppinessScale(choppiness);
+                    }
                     ImGui::EndTabItem();
                 }
             }
@@ -302,6 +317,8 @@ int main()
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        //break;//
 
         window.swapBuffers();
         window.pollEvents();
