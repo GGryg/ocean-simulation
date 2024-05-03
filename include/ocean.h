@@ -29,7 +29,16 @@ public:
         DX,
         DY,
         DZ,
+        NORMALMAP,
+        DYDX,
+        DZDZX,
+        DYXDYZ,
+        DXXDZZ,
+        DISPLACEMNT,
+        DERIVATIVES,
+        FOAM
     };
+    Ocean() {}
     Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t, float l);
     ~Ocean();
 
@@ -49,9 +58,13 @@ public:
     float length() const;
     void setL(float l);
 
+    void setChoppinessScale(float choppinessScale);
+    void setDisplacementScale(float displacementScale);
+
     GLuint texture(TextureVis textureVis) const;
 
 public:
+    void prepareResources();
     void generateMesh();
     void reverseIndices();
     GLuint reverseBits(GLuint n);
@@ -67,6 +80,8 @@ public:
     float m_length;
     float m_l;
     int m_log_2_N;
+    float m_choppinessScale;
+    float m_displacementScale;
 
     bool m_recalculateSpectrum;
 
