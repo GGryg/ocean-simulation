@@ -52,25 +52,26 @@ void main()
     vec3 L = -normalize(u_sunDirection);
     vec3 halfwayDir = normalize(L + V);
 
-    vec3 macroNormal = vec3(0.0, 1.0, 0.0);
-
-    float viewMask = smithMaskingBeckmann(halfwayDir, V, u_roughness);
-    float lightMask = smithMaskingBeckmann(halfwayDir, L, u_roughness);
+    float a = u_roughness;
+    float viewMask = smithMaskingBeckmann(halfwayDir, V, a);
+    float lightMask = smithMaskingBeckmann(halfwayDir, L, a);
 
     float G = 1.0 / (1.0 + viewMask + lightMask);
     float eta = 1.33;
     float R = ((eta - 1.0) * (eta - 1)) / ((eta + 1.0) * (eta + 1.0));
     float thetaV = acos(V.y);
 
-    float numerator = pow(1.0 - dot(N, V), 5.0 * exp(-2.69 * u_roughness));
-    float F = R + (1 + R) * numerator / (1.0 + 22.7 * pow(u_roughness, 1.5));
+    float numerator = pow(1.0 - dot(N, V), 5.0 * exp(-2.69 * a));
+    float F = R + (1 + R) * numerator / (1.0 + 22.7 * pow(a, 1.5));
     F = clamp(F, 0.0, 1.0);
 
-    vec3 specular = u_sunIrradiance * F * G * beckmann(N, halfwayDir, u_roughness);
+    vec3 specular = u_sunIrradiance * F * G * beckmann(N, halfwayDir, a);
     specular /= 4.0 * max(0.0001, dot(N, L));
-    specular *= max(0.0, dot(N, L));
+    specular *= max(0.0001, dot(N, L));
 
-    float k1 = u_wavePeakScatterStrength * u_waveHeight * pow(max(0.0001, dot(L, -V)), 4.0) * pow(0.5 - 0.5 * dot(L, N), 3.0);
+    float H = max(0.0, fragPosition.y) * u_waveHeight;
+
+    float k1 = u_wavePeakScatterStrength * H * pow(max(0.0001, dot(L, -V)), 4.0) * pow(0.5 - 0.5 * dot(L, N), 3.0);
     float k2 = u_scatterStrength * pow(max(0.0001, dot(V, N)), 2.0);
     float k3 = u_scatterShadowStrength * dot(N, L);
     float k4 = u_bubbleDensity;
@@ -82,5 +83,7 @@ void main()
     envReflection *= u_envLightStrength;
 
     vec3 color = (1.0 - F) * scatter + specular + F * envReflection;
+    color = color / (color + vec3(1.0));
+    color = pow(color, vec3(1.0/1.6));
     FragColor = vec4(color, 1.0);
 }
