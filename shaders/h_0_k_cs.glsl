@@ -44,7 +44,7 @@ float phillipsSecptrum(vec2 k, float k_magnitute, float L_phillips)
     float Phk = u_amplitude * ((exp(-1.0 / (k_magnitute_2 * L_phillips * L_phillips))) / k_magnitute_4) * pow(abs(KdotW), 8);
     if(KdotW < 0.0)
     {
-        Phk *= 0.1;
+        Phk *= 0.07;
     }
     return Phk * exp(-k_magnitute_2 * u_l * u_l);
 }
