@@ -60,13 +60,15 @@ void main()
     float cosine = cos(w*u_t);
     float sine = sin(w*u_t);
     vec2 exp_iwt = vec2(cosine, sine);
-    vec2 exp_iwt_inv = vec2(cosine, -sine);
+    vec2 exp_iwt_inv = complex_conjugate(exp_iwt);
 
     // h(k, t) = h0(k)exp(iw(k)*t) + h0(-k)*exp(-iw(k)*t)
     vec2 h_k_t_dy = complex_mul(fft_amplitute, exp_iwt) + complex_mul(fft_amplitute_conj, exp_iwt_inv);
+    vec2 ih_k_t_dy = vec2(-h_k_t_dy.x, h_k_t_dy.y);
+    vec2 neg_h_k_t_dy = vec2(-h_k_t_dy.x, -h_k_t_dy.y);
 
-    vec2 h_k_t_dx = complex_mul(vec2(0.0, -k.x/k_magnitute), h_k_t_dy);
-    vec2 h_k_t_dz = complex_mul(vec2(0.0, -k.y/k_magnitute), h_k_t_dy);
+    vec2 h_k_t_dx = (k.x/k_magnitute) * ih_k_t_dy;
+    vec2 h_k_t_dz = (k.y/k_magnitute) * ih_k_t_dy;
 
     imageStore(tilde_hkt_dy, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dy, 0, 1));
     imageStore(tilde_hkt_dx, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dx, 0, 1));

@@ -1,6 +1,7 @@
 #include "ocean.h"
 #include "resourceLoader.h"
 #include "constants.h"
+#include "shaderException.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -18,10 +19,22 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     , m_windDirection{glm::normalize(windDirection_t)}
     , m_length{length_t}
     , m_log_2_N{static_cast<int>(std::log(m_N) / std::log(2))}
-    , m_recalculateSpectrum(false)
+    , m_recalculateSpectrum(true)
     , m_l{l}
+    , m_displacementScale(15.5f)
+    , m_choppinessScale(19.7f)
 {
-    generateMesh();
+
+}
+
+Ocean::~Ocean()
+{
+
+}
+
+void Ocean::prepareResources()
+{
+        generateMesh();
 
     m_vao = std::make_unique<VArray>();
     m_vao->bind();
@@ -57,6 +70,10 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
 
 
     m_tilde_h0k_shader = ResourceLoader::get().loadShader("shaders/h_0_k_cs.glsl");
+    if(!m_tilde_h0k_shader->isValid())
+    {
+        throw ShaderException("Failed to compile tilde_h0k shader");
+    }
 
     m_tilde_h0k = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_tilde_h0k->bind();
@@ -72,6 +89,10 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_tilde_h0minusk->unbind();
 
     m_tilde_hkt_shader = ResourceLoader::get().loadShader("shaders/h_k_t_cs.glsl");
+    if(!m_tilde_hkt_shader->isValid())
+    {
+        throw ShaderException("Failed to compile tilde_hkt shader");
+    }
 
     m_tilde_hkt_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RG32F, GL_RG);
     m_tilde_hkt_dx->bind();
@@ -93,6 +114,10 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_tilde_hkt_dz->unbind();
 
     m_twiddleFactors_shader = ResourceLoader::get().loadShader("shaders/twiddle_factors_cs.glsl");
+    if(!m_twiddleFactors_shader->isValid())
+    {
+        throw ShaderException("Failed to compile twiddleFactors shader");
+    }
 
     m_twiddleFactors = std::make_unique<Texture>(GL_TEXTURE_2D, m_log_2_N, m_N, GL_RGBA32F, GL_RGBA);
     m_twiddleFactors->bind();
@@ -102,7 +127,15 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_twiddleFactors->unbind();
 
     m_butterflyOperation_shader = ResourceLoader::get().loadShader("shaders/butterfly_cs.glsl");
+    if(!m_butterflyOperation_shader->isValid())
+    {
+        throw ShaderException("Failed to compile butterflyOperation shader");
+    }
     m_inversion_shader = ResourceLoader::get().loadShader("shaders/inversion_cs.glsl");
+    if(!m_inversion_shader->isValid())
+    {
+        throw ShaderException("Failed to compile inversion shader");
+    }
 
     m_pingPong = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_pingPong->bind();
@@ -123,6 +156,10 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_dz->unbind();
 
     m_normalMap_shader = ResourceLoader::get().loadShader("shaders/normal_map_cs.glsl");
+    if(!m_normalMap_shader->isValid())
+    {
+        throw ShaderException("Failed to compile normalMap shader");
+    }
 
     m_normalMap = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
     m_normalMap->bind();
@@ -131,14 +168,9 @@ Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirect
     m_normalMap->bilinearFilter();
     m_normalMap->unbind();
 
-    tilde_h0k();
     calculateTwiddleFactor();
 }
 
-Ocean::~Ocean()
-{
-
-}
 
 void Ocean::generateMesh()
 {
@@ -207,7 +239,7 @@ void Ocean::tilde_h0k()
     glFinish();
 }
 
-void Ocean::tilde_hkt(float deltaTime)
+void Ocean::tilde_hkt(float timeSpeed)
 {
     m_tilde_hkt_shader->use();
 
@@ -219,7 +251,7 @@ void Ocean::tilde_hkt(float deltaTime)
 
     m_tilde_hkt_shader->setInt("u_N", m_N);
     m_tilde_hkt_shader->setInt("u_L", m_length);
-    m_tilde_hkt_shader->setFloat("u_t", static_cast<float>(glfwGetTime()) * 2);
+    m_tilde_hkt_shader->setFloat("u_t", static_cast<float>(glfwGetTime()) * timeSpeed);
 
     glDispatchCompute(8, 8, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
@@ -349,7 +381,7 @@ void Ocean::testFFT(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& o
 
 }
 
-void Ocean::waving(float deltaTime)
+void Ocean::waving(float deltaTime, float timeSpeed)
 {
     if(m_recalculateSpectrum)
     {
@@ -357,14 +389,10 @@ void Ocean::waving(float deltaTime)
         m_recalculateSpectrum = false;
     }
 
-    tilde_hkt(deltaTime);
-    // butterflyOperation(m_tilde_hkt_dy, m_dy);
-    // butterflyOperation(m_tilde_hkt_dx, m_dx);
-    // butterflyOperation(m_tilde_hkt_dz, m_dz);
-
-    testFFT(m_tilde_hkt_dy, m_dy);
-    testFFT(m_tilde_hkt_dx, m_dx);
-    testFFT(m_tilde_hkt_dz, m_dz);
+    tilde_hkt(timeSpeed);
+    butterflyOperation(m_tilde_hkt_dy, m_dy);
+    butterflyOperation(m_tilde_hkt_dx, m_dx);
+    butterflyOperation(m_tilde_hkt_dz, m_dz);
 
     normalMap();
 }
@@ -422,4 +450,31 @@ void Ocean::setL(float l)
 {
     m_l = l;
     m_recalculateSpectrum = true;
+}
+
+void Ocean::setChoppinessScale(float choppinessScale)
+{
+    m_choppinessScale = choppinessScale;
+}
+
+void Ocean::setDisplacementScale(float displacementScale)
+{
+    m_displacementScale = displacementScale;
+}
+
+GLuint Ocean::texture(TextureVis textureVis) const
+{
+    switch (textureVis)
+    {
+        case HIILDE0K: return m_tilde_h0k->id();
+        case HIILDE0MINUSK: return m_tilde_h0minusk->id();
+        case HIILDEKTDX: return m_tilde_hkt_dx->id();
+        case HIILDEKTDY: return m_tilde_hkt_dy->id();
+        case HIILDEKTDZ: return m_tilde_hkt_dz->id();
+        case DX: return m_dx->id();
+        case DY: return m_dy->id();
+        case DZ: return m_dz->id();
+        case NORMALMAP: return m_normalMap->id();
+    }
+    return 0;
 }
