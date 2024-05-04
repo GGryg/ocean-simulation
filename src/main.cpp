@@ -262,7 +262,7 @@ int main()
                     {
                         ocean.setwindDirection(windDirection);
                     }
-                    if(ImGui::SliderFloat("Length", &length, 100.0f, 1000.0f))
+                    if(ImGui::SliderFloat("Length", &length, 100.0f, 3000.0f))
                     {
                         ocean.setLength(length);
                     }

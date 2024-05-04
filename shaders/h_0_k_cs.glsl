@@ -59,9 +59,9 @@ void main()
     float L_phillips = u_windSpeed * u_windSpeed / M_GRAVITY;
 
     float k_magnitute = length(k);
-    if(k_magnitute < 0.0001)
+    if(k_magnitute < 0.000001)
     {
-        k_magnitute = 0.0001;
+        k_magnitute = 0.000001;
     }
 
     // sqrt(Ph(k)) / sqrt(2)
