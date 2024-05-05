@@ -8,21 +8,15 @@
 #include <iostream>
 #include <cmath>
 #include <GLFW/glfw3.h>
+#include <glm/gtc/matrix_transform.hpp>
 
-Ocean::Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t, float l)
-    : m_N{N_t}
-    , m_N1{N_t + 1}
-    , m_amplitude{amplitude_t}
-    , m_windSpeed{windSpeed_t}
-    , m_windDirection{glm::normalize(windDirection_t)}
-    , m_length{length_t}
-    , m_log_2_N{static_cast<int>(std::log(m_N) / std::log(2))}
+Ocean::Ocean(const SpectrumParams& params, const PBR& material)
+    : m_spectrumParams(params)
+    , m_material(material)
     , m_recalculateSpectrum(true)
-    , m_l{l}
-    , m_displacementScale(15.5f)
-    , m_choppinessScale(19.7f)
 {
-
+    m_N1 = m_spectrumParams.N + 1;
+    m_log_2_N = static_cast<int>(std::log(m_spectrumParams.N) / std::log(2));
 }
 
 Ocean::~Ocean()
@@ -32,7 +26,7 @@ Ocean::~Ocean()
 
 void Ocean::prepareResources()
 {
-        generateMesh();
+    generateMesh();
 
     m_vao = std::make_unique<VArray>();
     m_vao->bind();
@@ -44,6 +38,12 @@ void Ocean::prepareResources()
     m_ebo = std::make_unique<EBuffer>(m_indices.data(), m_indices.size(), GL_STATIC_DRAW);
     // initialize ssbo
     reverseIndices();
+
+    m_ocean_shader = ResourceLoader::get().loadShader("shaders/ocean_vs.glsl", "shaders/ocean_fs.glsl");
+    if(!m_ocean_shader->isValid())
+    {
+        throw ShaderException("Failed to compile ocean shader");
+    }
 
     m_noise0 = std::unique_ptr<Texture>(ResourceLoader::get().loadTexture("resources/noise/noise0.png", true));
     m_noise0->bind();
@@ -73,13 +73,13 @@ void Ocean::prepareResources()
         throw ShaderException("Failed to compile tilde_h0k shader");
     }
 
-    m_tilde_h0k = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_tilde_h0k = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
     m_tilde_h0k->bind();
     m_tilde_h0k->allocateStorage(1);
     m_tilde_h0k->clampToEdge();
     m_tilde_h0k->neareastFilter();
     m_tilde_h0k->unbind();
-    m_tilde_h0minusk = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_tilde_h0minusk = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
     m_tilde_h0minusk->bind();
     m_tilde_h0minusk->allocateStorage(1);
     m_tilde_h0minusk->clampToEdge();
@@ -92,19 +92,19 @@ void Ocean::prepareResources()
         throw ShaderException("Failed to compile tilde_hkt shader");
     }
 
-    m_tilde_hkt_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_tilde_hkt_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
     m_tilde_hkt_dx->bind();
     m_tilde_hkt_dx->allocateStorage(1);
     m_tilde_hkt_dx->repeat();
     m_tilde_hkt_dx->bilinearFilter();
     m_tilde_hkt_dx->unbind();
-    m_tilde_hkt_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_tilde_hkt_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
     m_tilde_hkt_dy->bind();
     m_tilde_hkt_dy->allocateStorage(1);
     m_tilde_hkt_dy->repeat();
     m_tilde_hkt_dy->bilinearFilter();
     m_tilde_hkt_dy->unbind();
-    m_tilde_hkt_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_tilde_hkt_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
     m_tilde_hkt_dz->bind();
     m_tilde_hkt_dz->allocateStorage(1);
     m_tilde_hkt_dz->repeat();
@@ -117,7 +117,7 @@ void Ocean::prepareResources()
         throw ShaderException("Failed to compile twiddleFactors shader");
     }
 
-    m_twiddleFactors = std::make_unique<Texture>(GL_TEXTURE_2D, m_log_2_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_twiddleFactors = std::make_unique<Texture>(GL_TEXTURE_2D, m_log_2_N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
     m_twiddleFactors->bind();
     m_twiddleFactors->allocateStorage(1);
     m_twiddleFactors->clampToEdge();
@@ -135,20 +135,20 @@ void Ocean::prepareResources()
         throw ShaderException("Failed to compile inversion shader");
     }
 
-    m_pingPong = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_pingPong = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
     m_pingPong->bind();
     m_pingPong->allocateStorage(1);
     m_pingPong->unbind();
 
-    m_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
     m_dx->bind();
     m_dx->allocateStorage(1);
     m_dx->unbind();
-    m_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
     m_dy->bind();
     m_dy->allocateStorage(1);
     m_dy->unbind();
-    m_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
     m_dz->bind();
     m_dz->allocateStorage(1);
     m_dz->unbind();
@@ -159,7 +159,7 @@ void Ocean::prepareResources()
         throw ShaderException("Failed to compile normalMap shader");
     }
 
-    m_normalMap = std::make_unique<Texture>(GL_TEXTURE_2D, m_N, m_N, GL_RGBA32F, GL_RGBA);
+    m_normalMap = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
     m_normalMap->bind();
     m_normalMap->allocateStorage(1);
     m_normalMap->repeat();
@@ -222,12 +222,12 @@ void Ocean::tilde_h0k()
     m_noise3->bindActive(5);
     m_tilde_h0k_shader->setInt("noise3", 5);
 
-    m_tilde_h0k_shader->setFloat("u_amplitude", m_amplitude);
-    m_tilde_h0k_shader->setFloat("u_windSpeed", m_windSpeed);
-    m_tilde_h0k_shader->setVec2("u_WindDirection", m_windDirection);
-    m_tilde_h0k_shader->setInt("u_N", m_N);
-    m_tilde_h0k_shader->setInt("u_L", m_length);
-    m_tilde_h0k_shader->setFloat("u_l", m_l);
+    m_tilde_h0k_shader->setFloat("u_amplitude", m_spectrumParams.amplitude);
+    m_tilde_h0k_shader->setFloat("u_windSpeed", m_spectrumParams.windSpeed);
+    m_tilde_h0k_shader->setVec2("u_WindDirection", m_spectrumParams.windDirection);
+    m_tilde_h0k_shader->setInt("u_N", m_spectrumParams.N);
+    m_tilde_h0k_shader->setFloat("u_L", m_spectrumParams.length);
+    m_tilde_h0k_shader->setFloat("u_l", m_spectrumParams.suppresorFactor);
 
     m_tilde_h0k->bindImage(0, 0, 0, GL_WRITE_ONLY);
     m_tilde_h0minusk->bindImage(1, 0, 0, GL_WRITE_ONLY);
@@ -247,8 +247,8 @@ void Ocean::tilde_hkt(float timeSpeed)
     m_tilde_hkt_dy->bindImage(3, 0, 0, GL_WRITE_ONLY);
     m_tilde_hkt_dz->bindImage(4, 0, 0, GL_WRITE_ONLY);
 
-    m_tilde_hkt_shader->setInt("u_N", m_N);
-    m_tilde_hkt_shader->setInt("u_L", m_length);
+    m_tilde_hkt_shader->setInt("u_N", m_spectrumParams.N);
+    m_tilde_hkt_shader->setFloat("u_L", m_spectrumParams.length);
     m_tilde_hkt_shader->setFloat("u_t", static_cast<float>(glfwGetTime()) * timeSpeed);
 
     glDispatchCompute(8, 8, 1);
@@ -258,7 +258,7 @@ void Ocean::tilde_hkt(float timeSpeed)
 GLuint Ocean::reverseBits(GLuint n)
 {
     GLuint result = 0;
-    int numBits = static_cast<int>(std::log(m_N) / std::log(2));
+    int numBits = static_cast<int>(std::log(m_spectrumParams.N) / std::log(2));
     for(int i = 0; i < numBits; ++i)
     {
         result |= (n & 1) << (numBits - 1 - i);
@@ -271,11 +271,11 @@ void Ocean::reverseIndices()
 {
     std::vector<GLuint> indices;
 
-    for(int i = 0; i < m_N; ++i)
+    for(int i = 0; i < m_spectrumParams.N; ++i)
     {
         indices.push_back(reverseBits(i));
     }
-    m_ssbo = std::make_unique<SSBuffer>(indices.data(), indices.size() * sizeof(GLuint), GL_STATIC_DRAW);
+    m_ssbo = std::make_unique<SSBuffer>(indices.data(), indices.size() * sizeof(GLuint), GL_STATIC_COPY);
 }
 
 void Ocean::calculateTwiddleFactor()
@@ -285,7 +285,7 @@ void Ocean::calculateTwiddleFactor()
     m_twiddleFactors->bindImage(0, 0, 0, GL_WRITE_ONLY);
     m_ssbo->bindBase(1);
 
-    m_twiddleFactors_shader->setInt("u_N", m_N);
+    m_twiddleFactors_shader->setInt("u_N", m_spectrumParams.N);
 
     glDispatchCompute(m_log_2_N, 8, 1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -328,7 +328,7 @@ void Ocean::butterflyOperation(std::unique_ptr<Texture>& input, std::unique_ptr<
     m_inversion_shader->use();
 
     m_inversion_shader->setInt("u_pingpong", pingpong);
-    m_inversion_shader->setInt("u_N", m_N);
+    m_inversion_shader->setInt("u_N", m_spectrumParams.N);
 
     output->bindImage(0, 0, 0, GL_WRITE_ONLY);
     input->bindImage(1, 0, 0, GL_READ_ONLY);
@@ -350,7 +350,7 @@ void Ocean::normalMap()
     m_normalMap_shader->setInt("u_dz", 3);
     m_dz->bindActive(3);
     
-    m_normalMap_shader->setInt("u_N", m_N);
+    m_normalMap_shader->setInt("u_N", m_spectrumParams.N);
 
     glDispatchCompute(8, 8, 1);
     glFinish();
@@ -372,69 +372,113 @@ void Ocean::waving(float deltaTime, float timeSpeed)
     normalMap();
 }
 
-void Ocean::draw(float deltaTime, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model)
+void Ocean::draw(float deltaTime, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model, int tiling)
 {
+    m_ocean_shader->use();
+
     m_vao->bind();
+
+    m_ocean_shader->setMat4("u_proj", proj);
+    m_ocean_shader->setMat4("u_view", view);
+    m_ocean_shader->setMat4("u_model", model);
+    m_ocean_shader->setInt("u_dx", 0);
+    m_dx->bindActive(0);
+    m_ocean_shader->setInt("u_dy", 1);
+    m_dy->bindActive(1);
+    m_ocean_shader->setInt("u_dz", 2);
+    m_dz->bindActive(2);
+    m_ocean_shader->setInt("u_normalMap", 3);
+    m_normalMap->bindActive(3);
+    m_ocean_shader->setInt("skybox", 4);
+    m_ocean_shader->setFloat("u_displacement", m_spectrumParams.displacementScale);
+    m_ocean_shader->setFloat("u_choppiness", m_spectrumParams.choppinessScale.x);
+
+    // lightining/shadows
+    m_ocean_shader->setVec3("u_viewPosition", cameraPosition);
+
+    m_ocean_shader->setFloat("u_roughness", m_material.roughness);
+    m_ocean_shader->setVec3("u_sunDirection", m_material.sunDirection);
+    m_ocean_shader->setVec3("u_sunIrradiance", m_material.sunIrradiance);
+    m_ocean_shader->setVec3("u_scatterColor", m_material.scatterColor);
+    m_ocean_shader->setVec3("u_bubbleColor", m_material.bubbleColor);
+    m_ocean_shader->setFloat("u_bubbleDensity", m_material.bubbleDensity);
+    m_ocean_shader->setFloat("u_wavePeakScatterStrength", m_material.wavePeakScatterStrength);
+    m_ocean_shader->setFloat("u_scatterStrength", m_material.scatterStrength);
+    m_ocean_shader->setFloat("u_scatterShadowStrength", m_material.scatterShadowStrength);
+    m_ocean_shader->setFloat("u_waveHeight", m_material.heightWave);
+    m_ocean_shader->setFloat("u_envLightStrength", m_material.envLightStrength);
+
+    for(int j = 0; j < tiling; ++j)
+    {
+        for(int i = 0; i < tiling; ++i)
+        {
+            model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+            model = glm::translate(model, glm::vec3(1024 * i, 0, 1024 * -j));
+            m_ocean_shader->setMat4("u_model", model);
+            glDrawElements(GL_TRIANGLES, m_ebo->count(), GL_UNSIGNED_INT, nullptr);
+        }
+    }
+
 }
 
 void Ocean::setAmplitude(float amplitude)
 {
-    m_amplitude = amplitude;
+    m_spectrumParams.amplitude = amplitude;
     m_recalculateSpectrum = true;
 }
 
 float Ocean::amplitude() const
 {
-    return m_amplitude;
+    return m_spectrumParams.amplitude;
 }
 
 void Ocean::setWindSpeed(float windSpeed)
 {
-    m_windSpeed = windSpeed;
+    m_spectrumParams.windSpeed = windSpeed;
     m_recalculateSpectrum = true;
 }
 
 float Ocean::windSpeed() const
 {
-    return m_windSpeed;
+    return m_spectrumParams.windSpeed;
 }
 
 void Ocean::setwindDirection(const glm::vec2& windDirection)
 {
-    m_windDirection = windDirection;
+    m_spectrumParams.windDirection = windDirection;
     m_recalculateSpectrum = true;
 }
 
 const glm::vec2& Ocean::windDirection() const
 {
-    return m_windDirection;
+    return m_spectrumParams.windDirection;
 }
 
 void Ocean::setLength(float length)
 {
-    m_length = length;
+    m_spectrumParams.length = length;
     m_recalculateSpectrum = true;
 }
 
 float Ocean::length() const
 {
-    return m_length;
+    return m_spectrumParams.length;
 }
 
-void Ocean::setL(float l)
+void Ocean::setSuppresorFactor(float suppresorFactor)
 {
-    m_l = l;
+    m_spectrumParams.suppresorFactor = suppresorFactor;
     m_recalculateSpectrum = true;
 }
 
-void Ocean::setChoppinessScale(float choppinessScale)
+void Ocean::setChoppinessScale(const glm::vec2& choppinessScale)
 {
-    m_choppinessScale = choppinessScale;
+    m_spectrumParams.choppinessScale = choppinessScale;
 }
 
 void Ocean::setDisplacementScale(float displacementScale)
 {
-    m_displacementScale = displacementScale;
+    m_spectrumParams.displacementScale = displacementScale;
 }
 
 GLuint Ocean::texture(TextureVis textureVis) const

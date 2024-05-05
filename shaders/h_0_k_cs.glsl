@@ -12,8 +12,8 @@ uniform float u_amplitude;
 uniform float u_windSpeed;
 uniform vec2 u_WindDirection;
 uniform int u_N;
-uniform int u_L;
-uniform float u_l;
+uniform float u_L;
+uniform float u_supressorFactor;
 
 layout (binding = 0, rgba32f) writeonly uniform image2D tilde_h_0_k;
 layout (binding = 1, rgba32f) writeonly uniform image2D tilde_h_0_minusk;
@@ -46,7 +46,7 @@ float phillipsSecptrum(vec2 k, float k_magnitute, float L_phillips)
     {
         Phk *= 0.07;
     }
-    return Phk * exp(-k_magnitute_2 * u_l * u_l);
+    return Phk * exp(-k_magnitute_2 * u_supressorFactor * u_supressorFactor);
 }
 
 // Based on Simulation Ocean Water by Jerry Tessendorf

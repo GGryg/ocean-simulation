@@ -5,7 +5,7 @@ const float M_PI = 3.1415926535897932384626433832795;
 const float M_GRAVITY = 9.81;
 
 uniform int u_N;
-uniform int u_L;
+uniform float u_L;
 uniform float u_t; // time
 
 layout(binding = 0, rgba32f) readonly uniform image2D tilde_h_0_k; // starting fft wave height field
@@ -48,11 +48,11 @@ void main()
     // h0(x, t)
     // x = (x, z), horizontal position
     vec2 fft_amplitute = vec2(imageLoad(tilde_h_0_k, ivec2(gl_GlobalInvocationID.xy)).r,
-                              imageLoad(tilde_h_0_k, ivec2(gl_GlobalInvocationID.xy)).g);
+                              imageLoad(tilde_h_0_k, ivec2(gl_GlobalInvocationID.xy)).g) * 5.0;
 
     // hconj0(-k, t)
     vec2 fft_amplitute_conj = complex_conjugate(vec2(imageLoad(tilde_h_0_minusk, ivec2(gl_GlobalInvocationID.xy)).r,
-                                                     imageLoad(tilde_h_0_minusk, ivec2(gl_GlobalInvocationID.xy)).g));
+                                                     imageLoad(tilde_h_0_minusk, ivec2(gl_GlobalInvocationID.xy)).g)) * 5.0;
 
     // exp(ix) = cos(x) + i*sin(x), Euler formula
     // {exp(ix) = cos(x) + i*sin(x)
