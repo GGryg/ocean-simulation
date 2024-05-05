@@ -250,6 +250,7 @@ void Ocean::tilde_hkt(float timeSpeed)
     m_tilde_hkt_shader->setInt("u_N", m_spectrumParams.N);
     m_tilde_hkt_shader->setFloat("u_L", m_spectrumParams.length);
     m_tilde_hkt_shader->setFloat("u_t", static_cast<float>(glfwGetTime()) * timeSpeed);
+    m_tilde_hkt_shader->setFloat("u_amplitude", m_spectrumParams.amplitude);
 
     glDispatchCompute(8, 8, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
