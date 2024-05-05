@@ -12,7 +12,7 @@ uniform sampler2D u_dz;
 uniform sampler2D u_normalMap;
 
 uniform float u_displacement;
-uniform float u_choppiness;
+uniform vec2 u_choppiness;
 
 out vec2 texCoord;
 out vec3 fragPosition;
@@ -22,9 +22,9 @@ void main()
 {
 
     vec3 pos = aPos;
-    pos.x -= texture(u_dx, aTex).r * u_choppiness;
+    pos.x -= texture(u_dx, aTex).r * u_choppiness.x;
     pos.y += texture(u_dy, aTex).r * u_displacement;
-    pos.z -= texture(u_dz, aTex).r * u_choppiness;
+    pos.z -= texture(u_dz, aTex).r * u_choppiness.y;
     gl_Position = u_proj * u_view * u_model * vec4(pos, 1.0);
 
     texCoord = aTex;

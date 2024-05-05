@@ -392,7 +392,7 @@ void Ocean::draw(float deltaTime, glm::vec3 cameraPosition, glm::mat4 proj, glm:
     m_normalMap->bindActive(3);
     m_ocean_shader->setInt("skybox", 4);
     m_ocean_shader->setFloat("u_displacement", m_spectrumParams.displacementScale);
-    m_ocean_shader->setFloat("u_choppiness", m_spectrumParams.choppinessScale.x);
+    m_ocean_shader->setVec2("u_choppiness", m_spectrumParams.choppinessScale);
 
     // lightining/shadows
     m_ocean_shader->setVec3("u_viewPosition", cameraPosition);

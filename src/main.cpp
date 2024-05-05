@@ -221,6 +221,7 @@ int main()
         glClearColor(.4f, .8f, .9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        skybox.texture()->bindActive(4);
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100000.0f);
@@ -229,7 +230,6 @@ int main()
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3{0.0f, 0.0f, 0.0f});
         //model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-        skybox.texture()->bindActive(4);
         ocean.draw(deltaTime, camera.position(), projection, view, model, tiling);
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -237,6 +237,7 @@ int main()
         //
         //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+        view = glm::mat4(glm::mat3(camera.getViewMat()));
         skybox.draw(view, projection);
 
         ImGui_ImplOpenGL3_NewFrame();
