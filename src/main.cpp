@@ -279,7 +279,7 @@ int main()
                     {
                         ocean.setDisplacementScale(spectrumParams.displacementScale);
                     }
-                    if(ImGui::InputFloat("Choppiness", &spectrumParams.choppinessScale.x))
+                    if(ImGui::InputFloat2("Choppiness", glm::value_ptr(spectrumParams.choppinessScale)))
                     {
                         ocean.setChoppinessScale(spectrumParams.choppinessScale);
                     }
@@ -288,17 +288,50 @@ int main()
             }
             if(ImGui::BeginTabItem("PBR"))
             {
-                ImGui::SliderFloat("Roughness", &roughness, 0.01f, 1.0f);
-                ImGui::InputFloat3("Sun direction", glm::value_ptr(sunDirection));
-                ImGui::InputFloat3("Sun Irradiance", glm::value_ptr(sunIrradiance));
-                ImGui::InputFloat("Wave height", &heightWave);
-                ImGui::ColorEdit3("Scatter color", glm::value_ptr(scatterColor), ImGuiColorEditFlags_Float);
-                ImGui::ColorEdit3("Bubble color", glm::value_ptr(bubbleColor), ImGuiColorEditFlags_Float);
-                ImGui::InputFloat("Bubble density", &bubbleDensity);
-                ImGui::InputFloat("Wave peak scatter strength", &wavePeakScatterStrength);
-                ImGui::InputFloat("Scatter strength", &scatterStrength);
-                ImGui::InputFloat("Scatter shadow strength", &scatterShadowStrength);
-                ImGui::InputFloat("Enviroment Light Strength", &envLightStrength);
+                if(ImGui::SliderFloat("Roughness", &material.roughness, 0.01f, 1.0f))
+                {
+                    ocean.setRoughness(material.roughness);
+                }
+                if(ImGui::InputFloat3("Sun direction", glm::value_ptr(material.sunDirection)))
+                {
+                    ocean.setSunDirection(material.sunDirection);
+                }
+                if(ImGui::InputFloat3("Sun Irradiance", glm::value_ptr(material.sunIrradiance)))
+                {
+                    ocean.setSunIrradiance(material.sunIrradiance);
+                }
+                if(ImGui::InputFloat("Wave height", &material.heightWave))
+                {
+                    ocean.setHeightWave(material.heightWave);
+                }
+                if(ImGui::ColorEdit3("Scatter color", glm::value_ptr(material.scatterColor), ImGuiColorEditFlags_Float))
+                {
+                    ocean.setScatterColor(material.scatterColor);
+                }
+                if(ImGui::ColorEdit3("Bubble color", glm::value_ptr(material.bubbleColor), ImGuiColorEditFlags_Float))
+                {
+                    ocean.setBubbleColor(material.bubbleColor);
+                }
+                if(ImGui::InputFloat("Bubble density", &material.bubbleDensity))
+                {
+                    ocean.setBubbleDensity(material.bubbleDensity);
+                }
+                if(ImGui::InputFloat("Wave peak scatter strength", &material.wavePeakScatterStrength))
+                {
+                    ocean.setWavePeakScatterStrength(material.wavePeakScatterStrength);
+                }
+                if(ImGui::InputFloat("Scatter strength", &material.scatterStrength))
+                {
+                    ocean.setScatterStrength(material.scatterStrength);
+                }
+                if(ImGui::InputFloat("Scatter shadow strength", &material.scatterShadowStrength))
+                {
+                    ocean.setScatterShadowStrength(material.scatterShadowStrength);
+                }
+                if(ImGui::InputFloat("Enviroment Light Strength", &material.envLightStrength))
+                {
+                    ocean.setEnvLightStrength(material.envLightStrength);
+                }
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();

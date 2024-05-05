@@ -78,6 +78,18 @@ public:
     float length() const;
     void setSuppresorFactor(float suppresorFactor);
 
+    void setSunDirection(const glm::vec3& sunDirection);
+    void setSunIrradiance(const glm::vec3& sunIrradiance);
+    void setScatterColor(const glm::vec3& scatterColor);
+    void setBubbleColor(const glm::vec3& bubbleColor);
+    void setBubbleDensity(float bubbleDensity);
+    void setWavePeakScatterStrength(float wavePeakScatterStrength);
+    void setScatterStrength(float scatterStrength);
+    void setScatterShadowStrength(float scatterShaderStrength);
+    void setHeightWave(float heightWave);
+    void setRoughness(float roughness);
+    void setEnvLightStrength(float envLightStrength);
+
     void setChoppinessScale(const glm::vec2& choppinessScale);
     void setDisplacementScale(float displacementScale);
 

@@ -413,7 +413,7 @@ void Ocean::draw(float deltaTime, glm::vec3 cameraPosition, glm::mat4 proj, glm:
     {
         for(int i = 0; i < tiling; ++i)
         {
-            model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+            model = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f));
             model = glm::translate(model, glm::vec3(1024 * i, 0, 1024 * -j));
             m_ocean_shader->setMat4("u_model", model);
             glDrawElements(GL_TRIANGLES, m_ebo->count(), GL_UNSIGNED_INT, nullptr);
@@ -470,6 +470,61 @@ void Ocean::setSuppresorFactor(float suppresorFactor)
 {
     m_spectrumParams.suppresorFactor = suppresorFactor;
     m_recalculateSpectrum = true;
+}
+
+void Ocean::setSunDirection(const glm::vec3 &sunDirection)
+{
+    m_material.sunDirection = sunDirection;
+}
+
+void Ocean::setSunIrradiance(const glm::vec3 &sunIrradiance)
+{
+    m_material.sunIrradiance = sunIrradiance;
+}
+
+void Ocean::setScatterColor(const glm::vec3 &scatterColor)
+{
+    m_material.scatterColor = scatterColor;
+}
+
+void Ocean::setBubbleColor(const glm::vec3 &bubbleColor)
+{
+    m_material.bubbleColor = bubbleColor;
+}
+
+void Ocean::setBubbleDensity(float bubbleDensity)
+{
+    m_material.bubbleDensity = bubbleDensity;
+}
+
+void Ocean::setWavePeakScatterStrength(float wavePeakScatterStrength)
+{
+    m_material.wavePeakScatterStrength = wavePeakScatterStrength;
+}
+
+void Ocean::setScatterStrength(float scatterStrength)
+{
+    m_material.scatterStrength = scatterStrength;
+}
+
+void Ocean::setScatterShadowStrength(float scatterShaderStrength)
+{
+    m_material.scatterShadowStrength = scatterShaderStrength;
+}
+
+void Ocean::setHeightWave(float heightWave)
+{
+    m_material.heightWave = heightWave;
+}
+
+void Ocean::setRoughness(float roughness)
+{
+    m_material.roughness = roughness;
+}
+
+void Ocean::setEnvLightStrength(float envLightStrength)
+{
+    m_material.envLightStrength = envLightStrength;
 }
 
 void Ocean::setChoppinessScale(const glm::vec2& choppinessScale)
