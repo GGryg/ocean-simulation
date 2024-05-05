@@ -4,6 +4,8 @@ project(OceanSimulation)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXE_LINKER_FLAGS "-static")
 
+configure_file(${PROJECT_SOURCE_DIR}/config.toml ${CMAKE_BINARY_DIR}/config.toml COPYONLY)
+
 # GLFW
 set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "")
 set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "")
@@ -58,6 +60,8 @@ file(GLOB IMGUI_GLOB
 
 include_directories(SYSTEM ${IMGUI_PATH})
 
+add_subdirectory(libs/tomlplusplus)
+
 add_executable(${CMAKE_PROJECT_NAME}
                                     "src/main.cpp"
                                     "libs/glad/src/gl.c"
@@ -76,6 +80,7 @@ add_executable(${CMAKE_PROJECT_NAME}
 target_link_libraries(${CMAKE_PROJECT_NAME}
                                     glfw
                                     glm
+                                    tomlplusplus::tomlplusplus
 )
 
 add_custom_command(
