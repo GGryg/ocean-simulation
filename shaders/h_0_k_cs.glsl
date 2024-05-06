@@ -12,8 +12,8 @@ uniform float u_amplitude;
 uniform float u_windSpeed;
 uniform vec2 u_WindDirection;
 uniform int u_N;
-uniform int u_L;
-uniform float u_l;
+uniform float u_L;
+uniform float u_suppresorFactor;
 
 layout (binding = 0, rgba32f) writeonly uniform image2D tilde_h_0_k;
 layout (binding = 1, rgba32f) writeonly uniform image2D tilde_h_0_minusk;
@@ -46,22 +46,22 @@ float phillipsSecptrum(vec2 k, float k_magnitute, float L_phillips)
     {
         Phk *= 0.07;
     }
-    return Phk * exp(-k_magnitute_2 * u_l * u_l);
+    return Phk * exp(-k_magnitute_2 * u_suppresorFactor * u_suppresorFactor);
 }
 
 // Based on Simulation Ocean Water by Jerry Tessendorf
 void main()
 {
-    vec2 x = vec2(gl_GlobalInvocationID.xy) - u_N / 2.0;
-    vec2 k = vec2(2.0 * M_PI * x.x / float(u_L), 2.0 * M_PI * x.y / float(u_L));
+    vec2 n = vec2(gl_GlobalInvocationID.xy) - u_N / 2.0;
+    vec2 k = vec2(2.0 * M_PI * n.x / float(u_L), 2.0 * M_PI * n.y / float(u_L));
 
     // L = V^2 / g
     float L_phillips = u_windSpeed * u_windSpeed / M_GRAVITY;
 
     float k_magnitute = length(k);
-    if(k_magnitute < 0.0001)
+    if(k_magnitute < 0.000001)
     {
-        k_magnitute = 0.0001;
+        k_magnitute = 0.000001;
     }
 
     // sqrt(Ph(k)) / sqrt(2)

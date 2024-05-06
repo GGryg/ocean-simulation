@@ -11,9 +11,9 @@ uniform sampler2D u_normalMap;
 uniform samplerCube u_skybox;
 
 uniform vec3 u_viewPosition;
+uniform int u_wireframeMode;
 
 uniform float u_roughness;
-
 uniform vec3 u_sunDirection;
 uniform vec3 u_sunIrradiance;
 uniform vec3 u_scatterColor;
@@ -45,6 +45,11 @@ float beckmann(vec3 N, vec3 H, float roughness)
 // Based on "Wakes, Explosions and Lighting: Interactive Water Simulation in Atlas"
 void main()
 {
+    if(u_wireframeMode == 1)
+    {
+        FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        return;
+    }
     vec3 N = normalize(normals);
     vec3 V = normalize(u_viewPosition - fragPosition);
     if (dot(N, V) < 0.0) N = -N;

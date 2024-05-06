@@ -5,8 +5,9 @@ const float M_PI = 3.1415926535897932384626433832795;
 const float M_GRAVITY = 9.81;
 
 uniform int u_N;
-uniform int u_L;
+uniform float u_L;
 uniform float u_t; // time
+uniform float u_amplitude;
 
 layout(binding = 0, rgba32f) readonly uniform image2D tilde_h_0_k; // starting fft wave height field
 layout(binding = 1, rgba32f) readonly uniform image2D tilde_h_0_minusk; // starting fft wave height amplitude
@@ -37,9 +38,9 @@ void main()
     vec2 k = vec2(2.0 * M_PI * n.x/u_L, 2.0 * M_PI * n.y/u_L);
 
     float k_magnitute = length(k);
-    if(k_magnitute < 0.0001)
+    if(k_magnitute < 0.000001)
     {
-        k_magnitute = 0.0001;
+        k_magnitute = 0.000001;
     }
 
     // w = sqrt(g*k) (dispersion curve)
@@ -47,12 +48,10 @@ void main()
 
     // h0(x, t)
     // x = (x, z), horizontal position
-    vec2 fft_amplitute = vec2(imageLoad(tilde_h_0_k, ivec2(gl_GlobalInvocationID.xy)).r,
-                              imageLoad(tilde_h_0_k, ivec2(gl_GlobalInvocationID.xy)).g);
+    vec2 k0k = imageLoad(tilde_h_0_k, ivec2(gl_GlobalInvocationID.xy)).rg * u_amplitude;
 
     // hconj0(-k, t)
-    vec2 fft_amplitute_conj = complex_conjugate(vec2(imageLoad(tilde_h_0_minusk, ivec2(gl_GlobalInvocationID.xy)).r,
-                                                     imageLoad(tilde_h_0_minusk, ivec2(gl_GlobalInvocationID.xy)).g));
+    vec2 hconj0minusk = complex_conjugate(imageLoad(tilde_h_0_minusk, ivec2(gl_GlobalInvocationID.xy)).rg) * u_amplitude;
 
     // exp(ix) = cos(x) + i*sin(x), Euler formula
     // {exp(ix) = cos(x) + i*sin(x)
@@ -63,14 +62,14 @@ void main()
     vec2 exp_iwt_inv = complex_conjugate(exp_iwt);
 
     // h(k, t) = h0(k)exp(iw(k)*t) + h0(-k)*exp(-iw(k)*t)
-    vec2 h_k_t_dy = complex_mul(fft_amplitute, exp_iwt) + complex_mul(fft_amplitute_conj, exp_iwt_inv);
+    vec2 h_k_t_dy = complex_mul(k0k, exp_iwt) + complex_mul(hconj0minusk, exp_iwt_inv);
     vec2 ih_k_t_dy = vec2(-h_k_t_dy.x, h_k_t_dy.y);
     vec2 neg_h_k_t_dy = vec2(-h_k_t_dy.x, -h_k_t_dy.y);
 
-    vec2 h_k_t_dx = (k.x/k_magnitute) * ih_k_t_dy;
-    vec2 h_k_t_dz = (k.y/k_magnitute) * ih_k_t_dy;
+    vec2 h_k_t_dx = complex_mul(vec2(0.0, -k.x/k_magnitute), h_k_t_dy);
+    vec2 h_k_t_dz = complex_mul(vec2(0.0, -k.y/k_magnitute), h_k_t_dy);
 
-    imageStore(tilde_hkt_dy, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dy, 0, 1));
-    imageStore(tilde_hkt_dx, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dx, 0, 1));
-    imageStore(tilde_hkt_dz, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dz, 0, 1));
+    imageStore(tilde_hkt_dy, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dy, 0.0, 1.0));
+    imageStore(tilde_hkt_dx, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dx, 0.0, 1.0));
+    imageStore(tilde_hkt_dz, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dz, 0.0, 1.0));
 }

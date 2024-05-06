@@ -16,6 +16,33 @@ struct OceanVertex
     glm::vec2 texCoord;
 };
 
+struct SpectrumParams
+{
+    glm::vec2 windDirection;
+    glm::vec2 choppinessScale;
+    float amplitude;
+    float windSpeed;
+    float length;
+    float suppresorFactor;
+    float displacementScale;
+    int N;
+};
+
+struct PBR
+{
+    glm::vec3 sunDirection;
+    glm::vec3 sunIrradiance;
+    glm::vec3 scatterColor;
+    glm::vec3 bubbleColor;
+    float bubbleDensity;
+    float wavePeakScatterStrength;
+    float scatterStrength;
+    float scatterShadowStrength;
+    float heightWave;
+    float roughness;
+    float envLightStrength;
+};
+
 class Ocean
 {
 public:
@@ -29,24 +56,17 @@ public:
         DX,
         DY,
         DZ,
-        NORMALMAP,
-        DYDX,
-        DZDZX,
-        DYXDYZ,
-        DXXDZZ,
-        DISPLACEMNT,
-        DERIVATIVES,
-        FOAM
+        NORMALMAP
     };
-    Ocean() {}
-    Ocean(int N_t, float amplitude_t, float windSpeed_t, glm::vec2 windDirection_t, float length_t, float l);
+
+    Ocean(const SpectrumParams& params, const PBR& material);
     ~Ocean();
 
     void tilde_h0k();
     void tilde_hkt(float timeSpeed);
 
     void waving(float deltaTime, float timeSpeed); // update
-    void draw(float deltaTime, glm::vec3 lightPosition, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model);
+    void draw(float deltaTime, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model, int tiling, bool wireframeMode);
 
     void setAmplitude(float amplitude);
     float amplitude() const;
@@ -56,15 +76,28 @@ public:
     const glm::vec2& windDirection() const;
     void setLength(float length);
     float length() const;
-    void setL(float l);
+    void setSuppresorFactor(float suppresorFactor);
 
-    void setChoppinessScale(float choppinessScale);
+    void setSunDirection(const glm::vec3& sunDirection);
+    void setSunIrradiance(const glm::vec3& sunIrradiance);
+    void setScatterColor(const glm::vec3& scatterColor);
+    void setBubbleColor(const glm::vec3& bubbleColor);
+    void setBubbleDensity(float bubbleDensity);
+    void setWavePeakScatterStrength(float wavePeakScatterStrength);
+    void setScatterStrength(float scatterStrength);
+    void setScatterShadowStrength(float scatterShaderStrength);
+    void setHeightWave(float heightWave);
+    void setRoughness(float roughness);
+    void setEnvLightStrength(float envLightStrength);
+
+    void setChoppinessScale(const glm::vec2& choppinessScale);
     void setDisplacementScale(float displacementScale);
 
     GLuint texture(TextureVis textureVis) const;
 
-public:
     void prepareResources();
+
+private:
     void generateMesh();
     void reverseIndices();
     GLuint reverseBits(GLuint n);
@@ -73,16 +106,10 @@ public:
     void normalMap();
     void testFFT(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& output);
 
-    int m_N{};
+    PBR m_material;
+    SpectrumParams m_spectrumParams;
     int m_N1{};
-    float m_amplitude{};
-    float m_windSpeed;
-    glm::vec2 m_windDirection{};
-    float m_length;
-    float m_l;
     int m_log_2_N;
-    float m_choppinessScale;
-    float m_displacementScale;
 
     bool m_recalculateSpectrum;
 
@@ -97,6 +124,7 @@ public:
     std::unique_ptr<Shader> m_butterflyOperation_shader;
     std::unique_ptr<Shader> m_inversion_shader;
     std::unique_ptr<Shader> m_normalMap_shader;
+    std::unique_ptr<Shader> m_ocean_shader;
 
     std::unique_ptr<Texture> m_tilde_h0k;
     std::unique_ptr<Texture> m_tilde_h0minusk;

@@ -48,6 +48,11 @@ bool Shader::isValid() const
     return m_valid;
 }
 
+void Shader::setBool(const std::string &name, bool v) const
+{
+    glUniform1i(glGetUniformLocation(m_id, name.c_str()), static_cast<int>(v));
+}
+
 void Shader::setInt(const std::string& name, int n) const
 {
     glUniform1i(glGetUniformLocation(m_id, name.c_str()), n);

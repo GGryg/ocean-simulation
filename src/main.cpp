@@ -1,7 +1,9 @@
+#include <constants.h>
 #include <iostream>
 #include <memory>
 #include <vector>
 #include <cstddef>
+#include <sstream>
 
 #include <glad/gl.h>
 
@@ -14,9 +16,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define TOML_EXCEPTIONS 0
+#include <filesystem>
+#include <toml++/toml.hpp>
+
 #include "camera.h"
 #include "logger.h"
-#include "resourceLoader.h"
 #include "window.h"
 #include "buffers.h"
 #include "ocean.h"
@@ -30,6 +35,7 @@ bool firstMouse{true};
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 bool cameraMode = false;
+bool wireframeMode = false;
 
 void processInput(Window& window)
 {
@@ -64,6 +70,10 @@ void processInput(Window& window)
         firstMouse = true;
         glfwSetInputMode(window.window(), GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
     }
+    if(glfwGetKey(window.window(), GLFW_KEY_R) == GLFW_PRESS)
+    {
+        wireframeMode = !wireframeMode;
+    }
 }
 
 void mosueCallback(GLFWwindow* window, double xPosIn, double yPosIn)
@@ -92,8 +102,13 @@ void mosueCallback(GLFWwindow* window, double xPosIn, double yPosIn)
 
 int main()
 {
-    const GLuint width = 1280;
-    const GLuint height = 720;
+    if(!std::filesystem::exists(constants::config)) [[unlikely]]
+    {
+        Logger::get().log("Config file doesn't exist", true);
+        return 1;
+    }
+    const GLuint width = 1600;
+    const GLuint height = 900;
 
     Window window{width, height, "Ocean Simulation"};
     glfwSetCursorPosCallback(window.window(), mosueCallback);
@@ -104,46 +119,69 @@ int main()
     glEnable(GL_CULL_FACE);
     glDisable(GL_BLEND);
 
-    std::unique_ptr<Shader> shader = ResourceLoader::get().loadShader("shaders/ocean_vs.glsl", "shaders/ocean_fs.glsl");
-    if(!shader->isValid())
+    toml::parse_result config = toml::parse_file(constants::config);
+    if(!config)
     {
+        std::stringstream ss;
+        ss << "Parsing config failed: " << config.error();
+        Logger::get().log(ss.str(), true);
         return 1;
     }
-    shader->use();
 
-    constexpr int N = 256; // MUST BE A POWER OF 2
-    float amplitute = 5.0f;
-    float windSpeed = 50.0f;
-    glm::vec2 windDirection{1.0f, 1.0f};
-    float length = 1000;
-    float l = 1;
+    SpectrumParams spectrumParams;
+    spectrumParams.N = constants::N;
+    if(config["spectrum"].is_table())
+    {
 
-    Ocean ocean{N, amplitute, windSpeed, windDirection, length, l};
+        spectrumParams.amplitude = config.at_path("spectrum.amplitude").as_floating_point()->get();
+        spectrumParams.length = config.at_path("spectrum.length").as_floating_point()->get();
+        spectrumParams.choppinessScale = glm::vec2(
+            config.at_path("spectrum.choppinessScale[0]").as_floating_point()->get(),
+            config.at_path("spectrum.choppinessScale[1]").as_floating_point()->get());
+        spectrumParams.displacementScale = config.at_path("spectrum.displacementScale").as_floating_point()->get();
+        spectrumParams.suppresorFactor = config.at_path("spectrum.suppresorFactor").as_floating_point()->get();
+        spectrumParams.windDirection = glm::vec2(config.at_path("spectrum.windDirection[0]").as_floating_point()->get(),
+                                                 config.at_path(
+                                                     "spectrum.windDirection[1]").as_floating_point()->get());
+        spectrumParams.windSpeed = config.at_path("spectrum.windSpeed").as_floating_point()->get();
+    }
+
+    PBR material;
+    if(config["pbr"].is_table())
+    {
+        material.roughness = config.at_path("pbr.roughness").as_floating_point()->get();
+        material.bubbleColor = glm::vec3(config.at_path("pbr.bubbleColor[0]").as_floating_point()->get(),
+                                         config.at_path("pbr.bubbleColor[1]").as_floating_point()->get(),
+                                         config.at_path("pbr.bubbleColor[2]").as_floating_point()->get());
+        material.bubbleDensity = config.at_path("pbr.bubbleDensity").as_floating_point()->get();
+        material.heightWave = config.at_path("pbr.heightWave").as_floating_point()->get();
+        material.scatterColor = glm::vec3(config.at_path("pbr.scatterColor[0]").as_floating_point()->get(),
+                                          config.at_path("pbr.scatterColor[1]").as_floating_point()->get(),
+                                          config.at_path("pbr.scatterColor[2]").as_floating_point()->get());
+        material.scatterStrength = config.at_path("pbr.scatterStrength").as_floating_point()->get();
+        material.sunDirection = glm::vec3(config.at_path("pbr.sunDirection[0]").as_floating_point()->get(),
+                                          config.at_path("pbr.sunDirection[1]").as_floating_point()->get(),
+                                          config.at_path("pbr.sunDirection[2]").as_floating_point()->get());
+        material.sunIrradiance = glm::vec3(config.at_path("pbr.sunIrradiance[0]").as_floating_point()->get(),
+                                           config.at_path("pbr.sunIrradiance[1]").as_floating_point()->get(),
+                                           config.at_path("pbr.sunIrradiance[2]").as_floating_point()->get());
+        material.envLightStrength = config.at_path("pbr.envLightStrength").as_floating_point()->get();
+        material.scatterShadowStrength = config.at_path("pbr.scatterShadowStrength").as_floating_point()->get();
+        material.wavePeakScatterStrength = config.at_path("pbr.wavePeakScatterStrength").as_floating_point()->get();
+    }
+
+
+    Ocean ocean{spectrumParams, material};
     try
     {
         ocean.prepareResources();
     }
     catch (const ShaderException& ex)
     {
-        std::cout<<"Help\n";
         Logger::get().log(ex.what(), true);
         return -1;
     }
     Skybox skybox;
-
-    glm::vec3 sunDirection(-1.29f, -1.0f, 4.86f);
-    glm::vec3 sunIrradiance(1.0f, 0.694f, 0.32f);
-    glm::vec3 scatterColor(0.016000003f, 0.07359998f, 0.16f);
-    glm::vec3 bubbleColor(0.0f, 0.02f, 0.015999999f);
-    float bubbleDensity = 1.0f;
-    float wavePeakScatterStrength = 1.0f;
-    float scatterStrength = 1.0f;
-    float scatterShadowStrength = 0.5f;
-    float heightWave = 1.0f;
-    float roughness = 0.08f;
-    float envLightStrength = 1.0f;
-    float choppiness = 19.7f;
-    float displacement = 15.5f;
 
     int tiling = 1;
     bool visualize = false;
@@ -161,7 +199,6 @@ int main()
 
     ImGui_ImplGlfw_InitForOpenGL(window.window(), true);
     ImGui_ImplOpenGL3_Init("#version 430");
-
     while(window.isOpen())
     {
 
@@ -174,63 +211,25 @@ int main()
         glClearColor(.4f, .8f, .9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader->use();
-        //vao.bind();
-        ocean.draw(deltaTime, glm::vec3(1.0), glm::vec3(1.0), glm::mat4(1.0), glm::mat4(1.0), glm::mat4(1.0));
+        skybox.texture()->bindActive(4);
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100000.0f);
         //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         view = camera.getViewMat();
-        shader->setMat4("u_proj", projection);
-        shader->setMat4("u_view", view);
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3{0.0f, 0.0f, 0.0f});
         //model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-        shader->setMat4("u_model", model);
-        shader->setInt("u_dx", 0);
-        ocean.m_dx->bindActive(0);
-        shader->setInt("u_dy", 1);
-        ocean.m_dy->bindActive(1);
-        shader->setInt("u_dz", 2);
-        ocean.m_dz->bindActive(2);
-        shader->setInt("u_normalMap", 3);
-        ocean.m_normalMap->bindActive(3);
-        shader->setInt("skybox", 4);
-        skybox.texture()->bindActive(4);
-        shader->setFloat("u_displacement", displacement);
-        shader->setFloat("u_choppiness", choppiness);
-        shader->setVec3("u_cameraPosition", camera.position());
-
-        // lightining/shadows
-        shader->setVec3("u_viewPosition", camera.position());
-
-        shader->setFloat("u_roughness", roughness);
-
-        shader->setVec3("u_sunDirection", sunDirection);
-        shader->setVec3("u_sunIrradiance", sunIrradiance);
-        shader->setVec3("u_scatterColor", scatterColor);
-        shader->setVec3("u_bubbleColor", bubbleColor);
-        shader->setFloat("u_bubbleDensity", bubbleDensity);
-        shader->setFloat("u_wavePeakScatterStrength", wavePeakScatterStrength);
-        shader->setFloat("u_scatterStrength", scatterStrength);
-        shader->setFloat("u_scatterShadowStrength", scatterShadowStrength);
-        shader->setFloat("u_waveHeight", heightWave);
-        shader->setFloat("u_envLightStrength", envLightStrength);
-
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        for(int j = 0; j < tiling; ++j)
+        if(wireframeMode)
         {
-            for(int i = 0; i < tiling; ++i)
-            {
-                model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-                model = glm::translate(model, glm::vec3(1024 * i, 0, 1024 * -j));
-                shader->setMat4("u_model", model);
-                glDrawElements(GL_TRIANGLES, ocean.m_ebo->count(), GL_UNSIGNED_INT, nullptr);
-            }
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
-        //
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        ocean.draw(deltaTime, camera.position(), projection, view, model, tiling, wireframeMode);
+
+        if(wireframeMode)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
 
         view = glm::mat4(glm::mat3(camera.getViewMat()));
         skybox.draw(view, projection);
@@ -250,50 +249,83 @@ int main()
             {
                 if(ImGui::BeginTabItem("Spectrum"))
                 {
-                    if(ImGui::InputFloat("Amplitude", &amplitute))
+                    if(ImGui::InputFloat("Amplitude", &spectrumParams.amplitude))
                     {
-                        ocean.setAmplitude(amplitute);
+                        ocean.setAmplitude(spectrumParams.amplitude);
                     }
-                    if(ImGui::InputFloat("Wind speed", &windSpeed))
+                    if(ImGui::InputFloat("Wind speed", &spectrumParams.windSpeed))
                     {
-                        ocean.setWindSpeed(windSpeed);
+                        ocean.setWindSpeed(spectrumParams.windSpeed);
                     }
-                    if(ImGui::SliderFloat2("Wind direction", glm::value_ptr(windDirection), -1.0f, 1.0f))
+                    if(ImGui::SliderFloat2("Wind direction", glm::value_ptr(spectrumParams.windDirection), -1.0f, 1.0f))
                     {
-                        ocean.setwindDirection(windDirection);
+                        ocean.setwindDirection(spectrumParams.windDirection);
                     }
-                    if(ImGui::SliderFloat("Length", &length, 100.0f, 1000.0f))
+                    if(ImGui::SliderFloat("Length", &spectrumParams.length, 100.0f, 3000.0f))
                     {
-                        ocean.setLength(length);
+                        ocean.setLength(spectrumParams.length);
                     }
-                    if(ImGui::SliderFloat("Supressor factor", &l, 0.0f, 50.0f))
+                    if(ImGui::SliderFloat("Supressor factor", &spectrumParams.suppresorFactor, 0.0f, 50.0f))
                     {
-                        ocean.setL(l);
+                        ocean.setSuppresorFactor(spectrumParams.suppresorFactor);
                     }
-                    if(ImGui::InputFloat("Displacement", &displacement))
+                    if(ImGui::InputFloat("Displacement", &spectrumParams.displacementScale))
                     {
-                        ocean.setDisplacementScale(displacement);
+                        ocean.setDisplacementScale(spectrumParams.displacementScale);
                     }
-                    if(ImGui::InputFloat("Choppiness", &choppiness))
+                    if(ImGui::InputFloat2("Choppiness", glm::value_ptr(spectrumParams.choppinessScale)))
                     {
-                        ocean.setChoppinessScale(choppiness);
+                        ocean.setChoppinessScale(spectrumParams.choppinessScale);
                     }
                     ImGui::EndTabItem();
                 }
             }
             if(ImGui::BeginTabItem("PBR"))
             {
-                ImGui::SliderFloat("Roughness", &roughness, 0.01f, 1.0f);
-                ImGui::InputFloat3("Sun direction", glm::value_ptr(sunDirection));
-                ImGui::InputFloat3("Sun Irradiance", glm::value_ptr(sunIrradiance));
-                ImGui::InputFloat("Wave height", &heightWave);
-                ImGui::ColorEdit3("Scatter color", glm::value_ptr(scatterColor), ImGuiColorEditFlags_Float);
-                ImGui::ColorEdit3("Bubble color", glm::value_ptr(bubbleColor), ImGuiColorEditFlags_Float);
-                ImGui::InputFloat("Bubble density", &bubbleDensity);
-                ImGui::InputFloat("Wave peak scatter strength", &wavePeakScatterStrength);
-                ImGui::InputFloat("Scatter strength", &scatterStrength);
-                ImGui::InputFloat("Scatter shadow strength", &scatterShadowStrength);
-                ImGui::InputFloat("Enviroment Light Strength", &envLightStrength);
+                if(ImGui::SliderFloat("Roughness", &material.roughness, 0.01f, 1.0f))
+                {
+                    ocean.setRoughness(material.roughness);
+                }
+                if(ImGui::InputFloat3("Sun direction", glm::value_ptr(material.sunDirection)))
+                {
+                    ocean.setSunDirection(material.sunDirection);
+                }
+                if(ImGui::InputFloat3("Sun Irradiance", glm::value_ptr(material.sunIrradiance)))
+                {
+                    ocean.setSunIrradiance(material.sunIrradiance);
+                }
+                if(ImGui::InputFloat("Wave height", &material.heightWave))
+                {
+                    ocean.setHeightWave(material.heightWave);
+                }
+                if(ImGui::ColorEdit3("Scatter color", glm::value_ptr(material.scatterColor), ImGuiColorEditFlags_Float))
+                {
+                    ocean.setScatterColor(material.scatterColor);
+                }
+                if(ImGui::ColorEdit3("Bubble color", glm::value_ptr(material.bubbleColor), ImGuiColorEditFlags_Float))
+                {
+                    ocean.setBubbleColor(material.bubbleColor);
+                }
+                if(ImGui::InputFloat("Bubble density", &material.bubbleDensity))
+                {
+                    ocean.setBubbleDensity(material.bubbleDensity);
+                }
+                if(ImGui::InputFloat("Wave peak scatter strength", &material.wavePeakScatterStrength))
+                {
+                    ocean.setWavePeakScatterStrength(material.wavePeakScatterStrength);
+                }
+                if(ImGui::InputFloat("Scatter strength", &material.scatterStrength))
+                {
+                    ocean.setScatterStrength(material.scatterStrength);
+                }
+                if(ImGui::InputFloat("Scatter shadow strength", &material.scatterShadowStrength))
+                {
+                    ocean.setScatterShadowStrength(material.scatterShadowStrength);
+                }
+                if(ImGui::InputFloat("Enviroment Light Strength", &material.envLightStrength))
+                {
+                    ocean.setEnvLightStrength(material.envLightStrength);
+                }
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();
@@ -310,7 +342,7 @@ int main()
             {
                 ImGui::Begin("Visualize texture");
                 ImGui::Combo("Select texture", &textureSelection, textureNames);
-                ImGui::Image(reinterpret_cast<void*>(ocean.texture(static_cast<Ocean::TextureVis>(textureSelection))), ImVec2(N, N));
+                ImGui::Image(reinterpret_cast<void*>(ocean.texture(static_cast<Ocean::TextureVis>(textureSelection))), ImVec2(512, 512));
                 ImGui::End();
             }
         }

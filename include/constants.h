@@ -2,6 +2,7 @@
 #define CONSTANTS_H
 
 #include <numbers>
+#include <string_view>
 
 namespace constants
 {
@@ -12,6 +13,9 @@ namespace constants
     inline constexpr int gridSize = 1024;
     inline constexpr int gridSizeP1 = gridSize + 1;
     inline constexpr int gridUVSize = 1;
+
+    inline constexpr int N = 256; // MUST BE POWER OF 2
+    inline constexpr std::string_view config = "config.toml";
 }
 
 #endif
