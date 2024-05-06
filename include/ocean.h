@@ -66,7 +66,7 @@ public:
     void tilde_hkt(float timeSpeed);
 
     void waving(float deltaTime, float timeSpeed); // update
-    void draw(float deltaTime, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model, int tiling);
+    void draw(float deltaTime, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model, int tiling, bool wireframeMode);
 
     void setAmplitude(float amplitude);
     float amplitude() const;

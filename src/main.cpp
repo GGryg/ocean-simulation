@@ -35,6 +35,7 @@ bool firstMouse{true};
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 bool cameraMode = false;
+bool wireframeMode = false;
 
 void processInput(Window& window)
 {
@@ -69,6 +70,10 @@ void processInput(Window& window)
         firstMouse = true;
         glfwSetInputMode(window.window(), GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
     }
+    if(glfwGetKey(window.window(), GLFW_KEY_R) == GLFW_PRESS)
+    {
+        wireframeMode = !wireframeMode;
+    }
 }
 
 void mosueCallback(GLFWwindow* window, double xPosIn, double yPosIn)
@@ -102,8 +107,8 @@ int main()
         Logger::get().log("Config file doesn't exist", true);
         return 1;
     }
-    const GLuint width = 1280;
-    const GLuint height = 720;
+    const GLuint width = 1600;
+    const GLuint height = 900;
 
     Window window{width, height, "Ocean Simulation"};
     glfwSetCursorPosCallback(window.window(), mosueCallback);
@@ -178,21 +183,6 @@ int main()
     }
     Skybox skybox;
 
-    glm::vec3 sunDirection(-1.29f, -1.0f, 4.86f);
-    glm::vec3 sunIrradiance(1.0f, 0.694f, 0.32f);
-    glm::vec3 scatterColor(0.016000003f, 0.07359998f, 0.16f);
-    glm::vec3 bubbleColor(0.0f, 0.02f, 0.015999999f);
-    float bubbleDensity = 1.0f;
-    float wavePeakScatterStrength = 1.0f;
-    float scatterStrength = 1.0f;
-    float scatterShadowStrength = 0.5f;
-    float heightWave = 1.0f;
-    float roughness = 0.08f;
-    float envLightStrength = 1.0f;
-
-    float choppiness = 19.7f;
-    float displacement = 15.5f;
-
     int tiling = 1;
     bool visualize = false;
     int textureSelection = Ocean::HIILDE0K;
@@ -230,12 +220,16 @@ int main()
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3{0.0f, 0.0f, 0.0f});
         //model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-        ocean.draw(deltaTime, camera.position(), projection, view, model, tiling);
+        if(wireframeMode)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        ocean.draw(deltaTime, camera.position(), projection, view, model, tiling, wireframeMode);
 
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-        //
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        if(wireframeMode)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
 
         view = glm::mat4(glm::mat3(camera.getViewMat()));
         skybox.draw(view, projection);

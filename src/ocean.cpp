@@ -227,7 +227,7 @@ void Ocean::tilde_h0k()
     m_tilde_h0k_shader->setVec2("u_WindDirection", m_spectrumParams.windDirection);
     m_tilde_h0k_shader->setInt("u_N", m_spectrumParams.N);
     m_tilde_h0k_shader->setFloat("u_L", m_spectrumParams.length);
-    m_tilde_h0k_shader->setFloat("u_l", m_spectrumParams.suppresorFactor);
+    m_tilde_h0k_shader->setFloat("u_suppresorFactor", m_spectrumParams.suppresorFactor);
 
     m_tilde_h0k->bindImage(0, 0, 0, GL_WRITE_ONLY);
     m_tilde_h0minusk->bindImage(1, 0, 0, GL_WRITE_ONLY);
@@ -373,7 +373,7 @@ void Ocean::waving(float deltaTime, float timeSpeed)
     normalMap();
 }
 
-void Ocean::draw(float deltaTime, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model, int tiling)
+void Ocean::draw(float deltaTime, glm::vec3 cameraPosition, glm::mat4 proj, glm::mat4 view, glm::mat4 model, int tiling, bool wireframeMode)
 {
     m_ocean_shader->use();
 
@@ -396,6 +396,7 @@ void Ocean::draw(float deltaTime, glm::vec3 cameraPosition, glm::mat4 proj, glm:
 
     // lightining/shadows
     m_ocean_shader->setVec3("u_viewPosition", cameraPosition);
+    m_ocean_shader->setBool("u_wireframeMode", wireframeMode);
 
     m_ocean_shader->setFloat("u_roughness", m_material.roughness);
     m_ocean_shader->setVec3("u_sunDirection", m_material.sunDirection);
@@ -413,7 +414,7 @@ void Ocean::draw(float deltaTime, glm::vec3 cameraPosition, glm::mat4 proj, glm:
     {
         for(int i = 0; i < tiling; ++i)
         {
-            model = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f));
+            model = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 3.0f, 3.0f));
             model = glm::translate(model, glm::vec3(1024 * i, 0, 1024 * -j));
             m_ocean_shader->setMat4("u_model", model);
             glDrawElements(GL_TRIANGLES, m_ebo->count(), GL_UNSIGNED_INT, nullptr);
