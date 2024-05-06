@@ -138,6 +138,9 @@ private:
     std::unique_ptr<Texture> m_dx;
     std::unique_ptr<Texture> m_dy;
     std::unique_ptr<Texture> m_dz;
+    std::unique_ptr<Texture> testx;
+    std::unique_ptr<Texture> testy;
+    std::unique_ptr<Texture> testz;
 
     std::unique_ptr<Texture> m_normalMap;
 

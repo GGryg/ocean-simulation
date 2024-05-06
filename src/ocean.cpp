@@ -94,19 +94,19 @@ void Ocean::prepareResources()
         throw ShaderException("Failed to compile tilde_hkt shader");
     }
 
-    m_tilde_hkt_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
+    m_tilde_hkt_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RG32F, GL_RG);
     m_tilde_hkt_dx->bind();
     m_tilde_hkt_dx->allocateStorage(1);
     m_tilde_hkt_dx->repeat();
     m_tilde_hkt_dx->bilinearFilter();
     m_tilde_hkt_dx->unbind();
-    m_tilde_hkt_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
+    m_tilde_hkt_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RG32F, GL_RG);
     m_tilde_hkt_dy->bind();
     m_tilde_hkt_dy->allocateStorage(1);
     m_tilde_hkt_dy->repeat();
     m_tilde_hkt_dy->bilinearFilter();
     m_tilde_hkt_dy->unbind();
-    m_tilde_hkt_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
+    m_tilde_hkt_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RG32F, GL_RG);
     m_tilde_hkt_dz->bind();
     m_tilde_hkt_dz->allocateStorage(1);
     m_tilde_hkt_dz->repeat();
@@ -137,23 +137,35 @@ void Ocean::prepareResources()
         throw ShaderException("Failed to compile inversion shader");
     }
 
-    m_pingPong = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
+    m_pingPong = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_R32F, GL_RED);
     m_pingPong->bind();
     m_pingPong->allocateStorage(1);
     m_pingPong->unbind();
 
-    m_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
+    m_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_R32F, GL_RED);
     m_dx->bind();
     m_dx->allocateStorage(1);
     m_dx->unbind();
-    m_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
+    m_dy = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_R32F, GL_RED);
     m_dy->bind();
     m_dy->allocateStorage(1);
     m_dy->unbind();
-    m_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
+    m_dz = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_R32F, GL_RED);
     m_dz->bind();
     m_dz->allocateStorage(1);
     m_dz->unbind();
+    testx = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_R32F, GL_RED);
+    testx->bind();
+    testx->allocateStorage(1);
+    testx->unbind();
+    testy = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_R32F, GL_RED);
+    testy->bind();
+    testy->allocateStorage(1);
+    testy->unbind();
+    testz = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_R32F, GL_RED);
+    testz->bind();
+    testz->allocateStorage(1);
+    testz->unbind();
 
     m_normalMap_shader = ResourceLoader::get().loadShader("shaders/normal_map_cs.glsl");
     if(!m_normalMap_shader->isValid())
@@ -302,8 +314,10 @@ void Ocean::butterflyOperation(std::unique_ptr<Texture>& input, std::unique_ptr<
     m_twiddleFactors->bindImage(0, 0, 0, GL_READ_ONLY);
     input->bindImage(1, 0, 0, GL_READ_WRITE);
     m_pingPong->bindImage(2, 0, 0, GL_READ_WRITE);
-
+    glDispatchCompute(8, 8, 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);//
     int pingpong = 0;
+    /*
     for(int i = 0; i < m_log_2_N; i++)
     {
         m_butterflyOperation_shader->setInt("u_pingpong", pingpong);
@@ -327,7 +341,7 @@ void Ocean::butterflyOperation(std::unique_ptr<Texture>& input, std::unique_ptr<
 
         pingpong ^= 1;
     }
-
+    */
     m_inversion_shader->use();
 
     m_inversion_shader->setInt("u_pingpong", pingpong);
@@ -352,7 +366,7 @@ void Ocean::normalMap()
     m_dx->bindActive(2);
     m_normalMap_shader->setInt("u_dz", 3);
     m_dz->bindActive(3);
-    
+
     m_normalMap_shader->setInt("u_N", m_spectrumParams.N);
 
     glDispatchCompute(8, 8, 1);
@@ -369,7 +383,7 @@ void Ocean::testFFT(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& o
     GLFFT::GLContext context;
 
     // doesn't work
-    GLFFT::FFT fft(&context, m_N, m_N, GLFFT::ComplexToReal, GLFFT::Inverse, GLFFT::Image, GLFFT::ImageReal, std::make_shared<GLFFT::ProgramCache>(), options);
+    GLFFT::FFT fft(&context, m_spectrumParams.N, m_spectrumParams.N, GLFFT::ComplexToReal, GLFFT::Inverse, GLFFT::Image, GLFFT::ImageReal, std::make_shared<GLFFT::ProgramCache>(), options);
 
     GLFFT::GLTexture adaptor_input(input->id());
     GLFFT::GLTexture adaptor_output(output->id());
@@ -391,9 +405,12 @@ void Ocean::waving(float deltaTime, float timeSpeed)
     }
 
     tilde_hkt(timeSpeed);
-    butterflyOperation(m_tilde_hkt_dy, m_dy);
-    butterflyOperation(m_tilde_hkt_dx, m_dx);
-    butterflyOperation(m_tilde_hkt_dz, m_dz);
+    testFFT(m_tilde_hkt_dy, testy);
+    testFFT(m_tilde_hkt_dx, testx);
+    testFFT(m_tilde_hkt_dz, testz);
+    butterflyOperation(testx, m_dx);
+    butterflyOperation(testy, m_dy);
+    butterflyOperation(testz, m_dz);
 
     normalMap();
 }

@@ -8,8 +8,8 @@ uniform int u_isVertical;
 uniform int u_stage;
 
 layout (binding = 0, rgba32f) readonly uniform image2D twiddleFactors;
-layout (binding = 1, rgba32f) uniform image2D ping;
-layout (binding = 2, rgba32f) uniform image2D pong;
+layout (binding = 1, r32f) uniform image2D ping;
+layout (binding = 2, r32f) uniform image2D pong;
 
 vec2 complex_mul(vec2 c0, vec2 c1)
 {
@@ -77,12 +77,14 @@ void vertical()
 
 void main()
 {
-    if(u_isVertical == 0)
-    {
-        horizontal();
-    }
-    else
-    {
-        vertical();
-    }
+    vec4 data = imageLoad(ping, ivec2(gl_GlobalInvocationID.xy));
+    imageStore(pong, ivec2(gl_GlobalInvocationID.xy), data);
+    //if(u_isVertical == 0)
+    //{
+    //    horizontal();
+    //}
+    //else
+    //{
+    //    vertical();
+    //}
 }
