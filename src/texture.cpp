@@ -138,7 +138,7 @@ void Texture::texImage2D()
 
 void Texture::texImageCubemap(GLenum target, unsigned char* data)
 {
-    glTexImage2D(target, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(target, 0, GL_RGB16F, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 }
 
 void Texture::setWidth(GLuint width)

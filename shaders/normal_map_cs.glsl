@@ -2,8 +2,6 @@
 layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 
 uniform sampler2D u_dy;
-uniform sampler2D u_dx;
-uniform sampler2D u_dz;
 uniform int u_N;
 
 layout (binding = 0, rgba32f) writeonly uniform image2D normalMap;
@@ -15,14 +13,14 @@ void main()
     float texelSize = 1.0/float(u_N);
 
     // Edge detection with Sobel operator
-    float n0 = texture(u_dy, texelCoord + vec2(-texelSize, -texelSize)).r - texture(u_dx, texelCoord + vec2(-texelSize, -texelSize)).r - texture(u_dz, texelCoord + vec2(-texelSize, -texelSize)).r;  // top left
-    float n1 = texture(u_dy, texelCoord + vec2(0, -texelSize)).r          - texture(u_dx, texelCoord + vec2(0, -texelSize)).r          - texture(u_dz, texelCoord + vec2(0, -texelSize)).r;           // top middle
-    float n2 = texture(u_dy, texelCoord + vec2(texelSize, -texelSize)).r  - texture(u_dx, texelCoord + vec2(texelSize, -texelSize)).r  - texture(u_dz, texelCoord + vec2(texelSize, -texelSize)).r;   // top right
-    float n3 = texture(u_dy, texelCoord + vec2(-texelSize, 0)).r          - texture(u_dx, texelCoord + vec2(-texelSize, 0)).r          - texture(u_dz, texelCoord + vec2(-texelSize, 0)).r;           // left
-    float n4 = texture(u_dy, texelCoord + vec2(texelSize, 0)).r           - texture(u_dx, texelCoord + vec2(texelSize, 0)).r           - texture(u_dz, texelCoord + vec2(texelSize, 0)).r;            // right
-    float n5 = texture(u_dy, texelCoord + vec2(-texelSize, texelSize)).r  - texture(u_dx, texelCoord + vec2(-texelSize, texelSize)).r  - texture(u_dz, texelCoord + vec2(-texelSize, texelSize)).r;   // bottom left
-    float n6 = texture(u_dy, texelCoord + vec2(0, texelSize)).r           - texture(u_dx, texelCoord + vec2(0, texelSize)).r           - texture(u_dz, texelCoord + vec2(0, texelSize)).r;;            // bottom middle
-    float n7 = texture(u_dy, texelCoord + vec2(texelSize, texelSize)).r   - texture(u_dx, texelCoord + vec2(texelSize, texelSize)).r   - texture(u_dz, texelCoord + vec2(texelSize, texelSize)).r;    // bottom right
+    float n0 = texture(u_dy, texelCoord + vec2(-texelSize, -texelSize)).r; // top left
+    float n1 = texture(u_dy, texelCoord + vec2(0, -texelSize)).r;          // top middle
+    float n2 = texture(u_dy, texelCoord + vec2(texelSize, -texelSize)).r;  // top right
+    float n3 = texture(u_dy, texelCoord + vec2(-texelSize, 0)).r;          // left
+    float n4 = texture(u_dy, texelCoord + vec2(texelSize, 0)).r;           // right
+    float n5 = texture(u_dy, texelCoord + vec2(-texelSize, texelSize)).r;  // bottom left
+    float n6 = texture(u_dy, texelCoord + vec2(0, texelSize)).r;           // bottom middle
+    float n7 = texture(u_dy, texelCoord + vec2(texelSize, texelSize)).r;   // bottom right
 
     vec3 normal;
     // [  1  2  1 ]
@@ -36,4 +34,5 @@ void main()
     normal.y = 1.0;
 
     imageStore(normalMap, x, vec4(normalize(normal), 1.0));
+
 }

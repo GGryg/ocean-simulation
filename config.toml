@@ -4,8 +4,8 @@ windSpeed = 40.0
 windDirection = [1.0, 1.0]
 suppresorFactor = 1.0
 length = 750.0
-displacementScale = 22.0
-choppinessScale = [11.0, 11.0]
+displacementScale = 1.2
+choppinessScale = [0.5, 0.7]
 
 [pbr]
 sunDirection = [-1.29, -1.0, 4.86]
