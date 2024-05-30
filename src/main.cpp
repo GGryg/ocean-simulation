@@ -342,7 +342,7 @@ int main()
             {
                 ImGui::Begin("Visualize texture");
                 ImGui::Combo("Select texture", &textureSelection, textureNames);
-                ImGui::Image(reinterpret_cast<void*>(ocean.texture(static_cast<Ocean::TextureVis>(textureSelection))), ImVec2(512, 512));
+                ImGui::Image(reinterpret_cast<void*>(ocean.texture(static_cast<Ocean::TextureVis>(textureSelection))), ImVec2(256, 256));
                 ImGui::End();
             }
         }

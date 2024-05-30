@@ -242,7 +242,7 @@ void Ocean::inverse()
     m_dy->bindImage(1, 0, 0, GL_READ_WRITE);
     m_dz->bindImage(2, 0, 0, GL_READ_WRITE);
 
-    glDispatchCompute(8, 8, 1);//hjd4
+    glDispatchCompute(8, 8, 1);
     glFinish();
 }
 
