@@ -62,6 +62,19 @@ include_directories(SYSTEM ${IMGUI_PATH})
 
 add_subdirectory(libs/tomlplusplus)
 
+include_directories(${PROJECT_SOURCE_DIR}/libs/include)
+set(GLFFT_PATH ${PROJECT_SOURCE_DIR}/libs/glfft)
+file(GLOB GLFFT_GLOB
+        ${GLFFT_PATH}/*.cpp
+)
+add_library(GLFFT ${GLFFT_GLOB})
+include_directories(${PROJECT_SOURCE_DIR}/libs/GLFFT)
+add_custom_command(
+        OUTPUT libs/GLFFT/glsl
+        WORKING_DIR libs/GLFFT/glsl
+        COMMAND make
+)
+
 add_executable(${CMAKE_PROJECT_NAME}
                                     "src/main.cpp"
                                     "libs/glad/src/gl.c"
@@ -75,6 +88,7 @@ add_executable(${CMAKE_PROJECT_NAME}
                                     "src/texture.cpp"
                                     "src/skybox.cpp"
                                     ${IMGUI_GLOB}
+                                    ${GLFFT_GLOB}
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
@@ -85,14 +99,14 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
 add_custom_command(
     TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
             ${CMAKE_SOURCE_DIR}/shaders
             ${CMAKE_BINARY_DIR}/shaders
 )
 
 add_custom_command(
     TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
             ${CMAKE_SOURCE_DIR}/resources
             ${CMAKE_BINARY_DIR}/resources
 )

@@ -12,9 +12,9 @@ uniform float u_amplitude;
 layout(binding = 0, rgba32f) readonly uniform image2D tilde_h_0_k; // starting fft wave height field
 layout(binding = 1, rgba32f) readonly uniform image2D tilde_h_0_minusk; // starting fft wave height amplitude
 
-layout(binding = 2, rgba32f) writeonly uniform image2D tilde_hkt_dx; // choppy x displacement
-layout(binding = 3, rgba32f) writeonly uniform image2D tilde_hkt_dy; // height displacement
-layout(binding = 4, rgba32f) writeonly uniform image2D tilde_hkt_dz; // choppy z displacement
+layout(binding = 2, rg32f) writeonly uniform image2D tilde_hkt_dx; // choppy x displacement
+layout(binding = 3, rg32f) writeonly uniform image2D tilde_hkt_dy; // height displacement
+layout(binding = 4, rg32f) writeonly uniform image2D tilde_hkt_dz; // choppy z displacement
 
 vec2 complex_mul(vec2 c0, vec2 c1)
 {
@@ -66,10 +66,10 @@ void main()
     vec2 ih_k_t_dy = vec2(-h_k_t_dy.x, h_k_t_dy.y);
     vec2 neg_h_k_t_dy = vec2(-h_k_t_dy.x, -h_k_t_dy.y);
 
-    vec2 h_k_t_dx = complex_mul(vec2(0.0, -k.x/k_magnitute), h_k_t_dy);
-    vec2 h_k_t_dz = complex_mul(vec2(0.0, -k.y/k_magnitute), h_k_t_dy);
+    vec2 h_k_t_dx = complex_mul(vec2(0.0, -k.x), h_k_t_dy) / k_magnitute;
+    vec2 h_k_t_dz = complex_mul(vec2(0.0, -k.y), h_k_t_dy) / k_magnitute;
 
-    imageStore(tilde_hkt_dy, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dy, 0.0, 1.0));
-    imageStore(tilde_hkt_dx, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dx, 0.0, 1.0));
-    imageStore(tilde_hkt_dz, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dz, 0.0, 1.0));
+    imageStore(tilde_hkt_dy, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dy, 0.0, 0.0));
+    imageStore(tilde_hkt_dx, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dx, 0.0, 0.0));
+    imageStore(tilde_hkt_dz, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dz, 0.0, 0.0));
 }

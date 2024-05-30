@@ -13,3 +13,6 @@
 [submodule "libs/tomlplusplus"]
 	path = libs/tomlplusplus
 	url = https://github.com/marzer/tomlplusplus.git
+[submodule "libs/glfft"]
+	path = libs/glfft
+	url = https://github.com/Themaister/GLFFT.git
