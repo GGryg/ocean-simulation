@@ -99,12 +99,9 @@ public:
 
 private:
     void generateMesh();
-    void reverseIndices();
-    GLuint reverseBits(GLuint n);
-    void calculateTwiddleFactor();
-    void butterflyOperation(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& output);
+    void inverse();
     void normalMap();
-    void testFFT(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& output);
+    void fft(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& output);
 
     PBR m_material;
     SpectrumParams m_spectrumParams;
@@ -120,8 +117,6 @@ private:
 
     std::unique_ptr<Shader> m_tilde_h0k_shader;
     std::unique_ptr<Shader> m_tilde_hkt_shader;
-    std::unique_ptr<Shader> m_twiddleFactors_shader;
-    std::unique_ptr<Shader> m_butterflyOperation_shader;
     std::unique_ptr<Shader> m_inversion_shader;
     std::unique_ptr<Shader> m_normalMap_shader;
     std::unique_ptr<Shader> m_ocean_shader;
@@ -131,9 +126,6 @@ private:
     std::unique_ptr<Texture> m_tilde_hkt_dx;
     std::unique_ptr<Texture> m_tilde_hkt_dy;
     std::unique_ptr<Texture> m_tilde_hkt_dz;
-
-    std::unique_ptr<Texture> m_twiddleFactors;
-    std::unique_ptr<Texture> m_pingPong;
 
     std::unique_ptr<Texture> m_dx;
     std::unique_ptr<Texture> m_dy;
@@ -149,7 +141,6 @@ private:
     std::unique_ptr<VArray> m_vao;
     std::unique_ptr<VBuffer> m_vbo;
     std::unique_ptr<EBuffer> m_ebo;
-    std::unique_ptr<SSBuffer> m_ssbo;
 };
 
 #endif

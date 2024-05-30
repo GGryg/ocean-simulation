@@ -38,8 +38,6 @@ void Ocean::prepareResources()
     elements.emplace_back(2, GL_FLOAT, GL_FALSE, offsetof(OceanVertex, texCoord));
     m_vao->addBuffer(m_vbo.get(), sizeof(OceanVertex), elements);
     m_ebo = std::make_unique<EBuffer>(m_indices.data(), m_indices.size(), GL_STATIC_DRAW);
-    // initialize ssbo
-    reverseIndices();
 
     m_ocean_shader = ResourceLoader::get().loadShader("shaders/ocean_vs.glsl", "shaders/ocean_fs.glsl");
     if(!m_ocean_shader->isValid())
@@ -113,34 +111,11 @@ void Ocean::prepareResources()
     m_tilde_hkt_dz->bilinearFilter();
     m_tilde_hkt_dz->unbind();
 
-    m_twiddleFactors_shader = ResourceLoader::get().loadShader("shaders/twiddle_factors_cs.glsl");
-    if(!m_twiddleFactors_shader->isValid())
-    {
-        throw ShaderException("Failed to compile twiddleFactors shader");
-    }
-
-    m_twiddleFactors = std::make_unique<Texture>(GL_TEXTURE_2D, m_log_2_N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
-    m_twiddleFactors->bind();
-    m_twiddleFactors->allocateStorage(1);
-    m_twiddleFactors->clampToEdge();
-    m_twiddleFactors->neareastFilter();
-    m_twiddleFactors->unbind();
-
-    m_butterflyOperation_shader = ResourceLoader::get().loadShader("shaders/butterfly_cs.glsl");
-    if(!m_butterflyOperation_shader->isValid())
-    {
-        throw ShaderException("Failed to compile butterflyOperation shader");
-    }
     m_inversion_shader = ResourceLoader::get().loadShader("shaders/inversion_cs.glsl");
     if(!m_inversion_shader->isValid())
     {
         throw ShaderException("Failed to compile inversion shader");
     }
-
-    m_pingPong = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_R32F, GL_RED);
-    m_pingPong->bind();
-    m_pingPong->allocateStorage(1);
-    m_pingPong->unbind();
 
     m_dx = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_R32F, GL_RED);
     m_dx->bind();
@@ -154,18 +129,6 @@ void Ocean::prepareResources()
     m_dz->bind();
     m_dz->allocateStorage(1);
     m_dz->unbind();
-    testx = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_R32F, GL_RED);
-    testx->bind();
-    testx->allocateStorage(1);
-    testx->unbind();
-    testy = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_R32F, GL_RED);
-    testy->bind();
-    testy->allocateStorage(1);
-    testy->unbind();
-    testz = std::make_unique<Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_R32F, GL_RED);
-    testz->bind();
-    testz->allocateStorage(1);
-    testz->unbind();
 
     m_normalMap_shader = ResourceLoader::get().loadShader("shaders/normal_map_cs.glsl");
     if(!m_normalMap_shader->isValid())
@@ -179,8 +142,6 @@ void Ocean::prepareResources()
     m_normalMap->repeat();
     m_normalMap->bilinearFilter();
     m_normalMap->unbind();
-
-    calculateTwiddleFactor();
 }
 
 
@@ -246,7 +207,7 @@ void Ocean::tilde_h0k()
     m_tilde_h0k->bindImage(0, 0, 0, GL_WRITE_ONLY);
     m_tilde_h0minusk->bindImage(1, 0, 0, GL_WRITE_ONLY);
 
-    glDispatchCompute(32, 32, 1);
+    glDispatchCompute(8, 8, 1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
     glFinish();
 }
@@ -268,90 +229,20 @@ void Ocean::tilde_hkt(float timeSpeed)
 
     glDispatchCompute(8, 8, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-}
-
-GLuint Ocean::reverseBits(GLuint n)
-{
-    GLuint result = 0;
-    int numBits = static_cast<int>(std::log(m_spectrumParams.N) / std::log(2));
-    for(int i = 0; i < numBits; ++i)
-    {
-        result |= (n & 1) << (numBits - 1 - i);
-        n >>= 1;
-    }
-    return result;
-}
-
-void Ocean::reverseIndices()
-{
-    std::vector<GLuint> indices;
-
-    for(int i = 0; i < m_spectrumParams.N; ++i)
-    {
-        indices.push_back(reverseBits(i));
-    }
-    m_ssbo = std::make_unique<SSBuffer>(indices.data(), indices.size() * sizeof(GLuint), GL_STATIC_COPY);
-}
-
-void Ocean::calculateTwiddleFactor()
-{
-    m_twiddleFactors_shader->use();
-
-    m_twiddleFactors->bindImage(0, 0, 0, GL_WRITE_ONLY);
-    m_ssbo->bindBase(1);
-
-    m_twiddleFactors_shader->setInt("u_N", m_spectrumParams.N);
-
-    glDispatchCompute(m_log_2_N, 8, 1);
-    glMemoryBarrier(GL_ALL_BARRIER_BITS);
     glFinish();
-
 }
 
-void Ocean::butterflyOperation(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& output)
+void Ocean::inverse()
 {
-    m_butterflyOperation_shader->use();
-    m_twiddleFactors->bindImage(0, 0, 0, GL_READ_ONLY);
-    input->bindImage(1, 0, 0, GL_READ_WRITE);
-    m_pingPong->bindImage(2, 0, 0, GL_READ_WRITE);
-    glDispatchCompute(8, 8, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);//
-    int pingpong = 0;
-    /*
-    for(int i = 0; i < m_log_2_N; i++)
-    {
-        m_butterflyOperation_shader->setInt("u_pingpong", pingpong);
-        m_butterflyOperation_shader->setInt("u_isVertical", 0);
-        m_butterflyOperation_shader->setInt("u_stage", i);
-
-        glDispatchCompute(8, 8, 1);
-        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-        pingpong ^= 1;
-    }
-
-    for(int i = 0; i < m_log_2_N; i++)
-    {
-        m_butterflyOperation_shader->setInt("u_pingpong", pingpong);
-        m_butterflyOperation_shader->setInt("u_isVertical", 1);
-        m_butterflyOperation_shader->setInt("u_stage", i);
-
-        glDispatchCompute(8, 8, 1);
-        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-        pingpong ^= 1;
-    }
-    */
     m_inversion_shader->use();
 
-    m_inversion_shader->setInt("u_pingpong", pingpong);
     m_inversion_shader->setInt("u_N", m_spectrumParams.N);
 
-    output->bindImage(0, 0, 0, GL_WRITE_ONLY);
-    input->bindImage(1, 0, 0, GL_READ_ONLY);
-    m_pingPong->bindImage(2, 0, 0, GL_READ_ONLY);
+    m_dx->bindImage(0, 0, 0, GL_READ_WRITE);
+    m_dy->bindImage(1, 0, 0, GL_READ_WRITE);
+    m_dz->bindImage(2, 0, 0, GL_READ_WRITE);
 
-    glDispatchCompute(8, 8, 1);
+    glDispatchCompute(8, 8, 1);//hjd4
     glFinish();
 }
 
@@ -366,10 +257,11 @@ void Ocean::normalMap()
     m_normalMap_shader->setInt("u_N", m_spectrumParams.N);
 
     glDispatchCompute(8, 8, 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     glFinish();
 }
 
-void Ocean::testFFT(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& output)
+void Ocean::fft(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& output)
 {
     GLFFT::FFTOptions options;
     options.type.fp16 = false;
@@ -378,7 +270,6 @@ void Ocean::testFFT(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& o
     options.type.normalize = true;
     GLFFT::GLContext context;
 
-    // doesn't work
     GLFFT::FFT fft(&context, m_spectrumParams.N, m_spectrumParams.N, GLFFT::ComplexToReal, GLFFT::Inverse, GLFFT::Image, GLFFT::ImageReal, std::make_shared<GLFFT::ProgramCache>(), options);
 
     GLFFT::GLTexture adaptor_input(input->id());
@@ -389,7 +280,6 @@ void Ocean::testFFT(std::unique_ptr<Texture>& input, std::unique_ptr<Texture>& o
     cmd->barrier();
     context.submit_command_buffer(cmd);
     context.wait_idle();
-
 }
 
 void Ocean::waving(float deltaTime, float timeSpeed)
@@ -401,12 +291,10 @@ void Ocean::waving(float deltaTime, float timeSpeed)
     }
 
     tilde_hkt(timeSpeed);
-    testFFT(m_tilde_hkt_dy, testy);
-    testFFT(m_tilde_hkt_dx, testx);
-    testFFT(m_tilde_hkt_dz, testz);
-    butterflyOperation(testx, m_dx);
-    butterflyOperation(testy, m_dy);
-    butterflyOperation(testz, m_dz);
+    fft(m_tilde_hkt_dy, m_dy);
+    fft(m_tilde_hkt_dx, m_dx);
+    fft(m_tilde_hkt_dz, m_dz);
+    inverse();
 
     normalMap();
 }
