@@ -265,7 +265,7 @@ int main()
                     {
                         ocean.setLength(spectrumParams.length);
                     }
-                    if(ImGui::SliderFloat("Supressor factor", &spectrumParams.suppresorFactor, 0.0f, 50.0f))
+                    if(ImGui::SliderFloat("Supressor factor", &spectrumParams.suppresorFactor, 0.0f, 30.0f))
                     {
                         ocean.setSuppresorFactor(spectrumParams.suppresorFactor);
                     }

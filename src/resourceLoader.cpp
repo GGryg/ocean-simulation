@@ -101,10 +101,12 @@ std::unique_ptr<Texture> ResourceLoader::loadCubemap(const std::vector<std::stri
             Logger::get().log("TEXTURE: Failed to load cubemap texture: " + facesPath[i], true);
             return nullptr;
         }
-
         texture->texImageCubemap(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, data);
+
         stbi_image_free(data);
     }
+    texture->clampToEdgeCube();
+    texture->trilinearFilter();
 
     return std::move(texture);
 }

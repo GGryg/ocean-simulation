@@ -88,7 +88,7 @@ void Skybox::createBox()
 
 void Skybox::createTexture()
 {
-    std::vector<std::string> faces = {
+    const std::vector<std::string> faces = {
         "resources/textures/Daylight_Box_Right.bmp",
         "resources/textures/Daylight_Box_Left.bmp",
         "resources/textures/Daylight_Box_Top.bmp",
