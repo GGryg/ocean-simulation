@@ -26,7 +26,7 @@ namespace gfx
 
 		void createTexture();
 
-		std::unique_ptr<gfx::VArray> m_vao;
+		VArrayPtr m_vao;
 		VBufferPtr m_vbo;
 		ShaderPtr m_shader;
 		TexturePtr m_texture;
