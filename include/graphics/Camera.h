@@ -25,8 +25,6 @@ namespace gfx
 
 		void processKeyboard(float deltaTime, MoveDirection direction);
 
-		float zoom() const;
-
 		const glm::vec3 &position() const;
 
 	private:

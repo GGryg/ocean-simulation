@@ -27,8 +27,6 @@ namespace gfx
 
 		Shader(const std::string &computeShaderSource);
 
-		Shader();
-
 		void use() const;
 
 		bool isValid() const;
