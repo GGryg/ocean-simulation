@@ -4,6 +4,7 @@ project(OceanSimulation)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXE_LINKER_FLAGS "-static")
 
+# config file
 configure_file(${PROJECT_SOURCE_DIR}/config.toml ${CMAKE_BINARY_DIR}/config.toml COPYONLY)
 
 # GLFW
@@ -12,14 +13,18 @@ set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "")
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "")
 add_subdirectory(libs/glfw)
 
+# GLM
 add_subdirectory(libs/glm)
 
+# STB IMAGE
 set(STB_DIRS ${PROJECT_SOURCE_DIR}/libs/stb)
 
+# GLAD
 include_directories(SYSTEM "libs/glad/include")
 include_directories(SYSTEM ${STB_DIRS})
 include_directories(SYSTEM "include")
 
+# Dear ImGui
 set(IMGUI_SOURCES
     "libs/imgui/imconfig.h"
     "libs/imgui/imgui_internal.h"
@@ -60,9 +65,13 @@ file(GLOB IMGUI_GLOB
 
 include_directories(SYSTEM ${IMGUI_PATH})
 
+# Toml++
 add_subdirectory(libs/tomlplusplus)
 
+# additional includes for the libraries to work
 include_directories(${PROJECT_SOURCE_DIR}/libs/include)
+
+# GLFFT
 set(GLFFT_PATH ${PROJECT_SOURCE_DIR}/libs/glfft)
 file(GLOB GLFFT_GLOB
         ${GLFFT_PATH}/*.cpp
@@ -79,14 +88,18 @@ add_executable(${CMAKE_PROJECT_NAME}
                                     "src/main.cpp"
                                     "libs/glad/src/gl.c"
                                     "src/logger/logger.cpp"
-                                    "src/window.cpp"
-                                    "src/buffers.cpp"
-                                    "src/resourceLoader.cpp"
-                                    "src/shader.cpp"
-                                    "src/ocean.cpp"
-                                    "src/camera.cpp"
-                                    "src/texture.cpp"
-                                    "src/skybox.cpp"
+                                    "src/core/Window.cpp"
+                                    "src/core/ResourceLoader.cpp"
+                                    "src/graphics/Shader.cpp"
+                                    "src/graphics/VArray.cpp"
+                                    "src/graphics/VBuffer.cpp"
+                                    "src/graphics/EBuffer.cpp"
+                                    "src/core/Ocean.cpp"
+                                    "src/graphics/Camera.cpp"
+                                    "src/graphics/Texture.cpp"
+                                    "src/graphics/Skybox.cpp"
+                                    "src/core/Application.cpp"
+                                    "src/core/Input.cpp"
                                     ${IMGUI_GLOB}
                                     ${GLFFT_GLOB}
 )
