@@ -15,7 +15,7 @@ uniform int u_wireframeMode;
 
 uniform float u_roughness;
 uniform vec3 u_sunDirection;
-uniform vec3 u_sunIrradiance;
+uniform vec3 u_sunColor;
 uniform vec3 u_scatterColor;
 uniform vec3 u_bubbleColor;
 uniform float u_bubbleDensity;
@@ -27,67 +27,73 @@ uniform float u_envLightStrength;
 
 float smithMaskingBeckmann(vec3 H, vec3 S, float a)
 {
-    float HdotS = max(dot(H, S), 0.0001);
-    float c = HdotS / (a * sqrt(1.0 - HdotS * HdotS));
-    float c2 = c * c;
+	float HdotS = max(dot(H, S), 0.0001);
+	float c = HdotS / (a * sqrt(1.0 - HdotS * HdotS));
+	float c2 = c * c;
 
-    return c < 1.6 ? (1.0 - 1.259 * c + 0.396 * c2) / (3.535 * c + 2.181 * c2) : 0.0;
+	return c < 1.6 ? (1.0 - 1.259 * c + 0.396 * c2) / (3.535 * c + 2.181 * c2) : 0.0;
 }
 
 float beckmann(vec3 N, vec3 H, float a)
 {
-    float NdotH = max(dot(N, H), 0.0001);
-    float p22 = exp((NdotH * NdotH - 1.0) / (a * NdotH * NdotH));
+	float NdotH = max(dot(N, H), 0.0001);
+	float p22 = exp((NdotH * NdotH - 1.0) / (a * NdotH * NdotH));
 
-    return p22 / (M_PI * a * NdotH * NdotH * NdotH * NdotH);
+	return p22 / (M_PI * a * NdotH * NdotH * NdotH * NdotH);
+}
+
+float fresnelSchlick(vec3 N, vec3 V, float a)
+{
+	float eta = 1.0 / 1.333; // refractive index of air / refractive index of water
+	float R = ((eta - 1.0) * (eta - 1)) / ((eta + 1.0) * (eta + 1.0));
+
+	float numerator = pow(1.0 - dot(N, V), 5.0 * exp(-2.69 * a));
+	float F = R + (1.0 + R) * numerator / (1.0 + 22.7 * pow(a, 1.5));
+
+	return clamp(F, 0.0, 1.0);
 }
 
 // Based on "Wakes, Explosions and Lighting: Interactive Water Simulation in Atlas"
 void main()
 {
-    if(u_wireframeMode == 1)
-    {
-        FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-        return;
-    }
-    vec3 N = normalize(normals);
-    vec3 V = normalize(u_viewPosition - fragPosition);
-    if (dot(N, V) < 0.0) N = -N;
+	if (u_wireframeMode == 1)
+	{
+		FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+		return;
+	}
+	vec3 N = normalize(normals);
+	vec3 V = normalize(u_viewPosition - fragPosition);
+	if (dot(N, V) < 0.0) N = -N;
 
-    vec3 L = -normalize(u_sunDirection);
-    vec3 halfwayDir = normalize(L + V);
+	vec3 L = -normalize(u_sunDirection);
+	vec3 H = normalize(L + V);
 
-    float a = u_roughness * u_roughness;
-    float viewMask = smithMaskingBeckmann(halfwayDir, V, a);
-    float lightMask = smithMaskingBeckmann(halfwayDir, L, a);
+	float a = u_roughness * u_roughness;
+	float viewMask = smithMaskingBeckmann(H, V, a);
+	float lightMask = smithMaskingBeckmann(H, L, a);
 
-    float G = 1.0 / (1.0 + viewMask + lightMask);
-    float eta = 1.33; // refractive index of water / refractive index of air
-    float R = ((eta - 1.0) * (eta - 1)) / ((eta + 1.0) * (eta + 1.0));
+	float G = 1.0 / (1.0 + viewMask + lightMask);
+	float F = fresnelSchlick(N, V, a);
 
-    float numerator = pow(1.0 - dot(N, V), 5.0 * exp(-2.69 * a));
-    float F = R + (1.0 + R) * numerator / (1.0 + 22.7 * pow(a, 1.5));
-    F = clamp(F, 0.0, 1.0);
+	vec3 specular = u_sunColor * F * G * beckmann(N, H, a);
+	specular /= 4.0 * max(0.0001, dot(N, L));
+	specular /= max(0.0001, dot(N, V));
 
-    vec3 specular = u_sunIrradiance * F * G * beckmann(N, halfwayDir, a);
-    specular /= 4.0 * max(0.0001, dot(N, L));
-    specular /= max(0.0001, dot(N, V));
+	float waveH = max(0.0, fragPosition.y) * u_waveHeight;
 
-    float H = max(0.0, fragPosition.y) * u_waveHeight;
+	float k1 = u_wavePeakScatterStrength * waveH * pow(max(0.0, dot(L, -V)), 4.0) * pow(0.5 - 0.5 * dot(L, N), 3.0);
+	float k2 = u_scatterStrength * pow(max(0.0, dot(V, N)), 2.0);
+	float k3 = u_scatterShadowStrength * dot(N, L);
+	float k4 = u_bubbleDensity;
 
-    float k1 = u_wavePeakScatterStrength * H * pow(max(0.0, dot(L, -V)), 4.0) * pow(0.5 - 0.5 * dot(L, N), 3.0);
-    float k2 = u_scatterStrength * pow(max(0.0, dot(V, N)), 2.0);
-    float k3 = u_scatterShadowStrength * dot(N, L);
-    float k4 = u_bubbleDensity;
+	vec3 scatter = (k1 + k2) * u_scatterColor * u_sunColor * (1.0 / (1.0 + lightMask));
+	scatter += k3 * u_scatterColor * u_sunColor + k4 * u_bubbleColor * u_sunColor;
 
-    vec3 scatter = (k1 + k2) * u_scatterColor * u_sunIrradiance * (1.0/(1.0 + lightMask));
-    scatter += k3 * u_scatterColor * u_sunIrradiance + k4 * u_bubbleColor * u_sunIrradiance;
+	vec3 envReflection = texture(u_skybox, reflect(-V, N)).rgb;
+	envReflection *= u_envLightStrength;
 
-    vec3 envReflection = texture(u_skybox, reflect(-V, N)).rgb;
-    envReflection *= u_envLightStrength;
-
-    vec3 color = (1.0 - F) * scatter + specular + F * envReflection;
-    color = color / (color + vec3(1.0));
-    color = pow(color, vec3(1.0/1.6));
-    FragColor = vec4(color, 1.0);
+	vec3 color = (1.0 - F) * scatter + specular + F * envReflection;
+	color = color / (color + vec3(1.0));
+	color = pow(color, vec3(1.0 / 2.2));
+	FragColor = vec4(color, 1.0);
 }

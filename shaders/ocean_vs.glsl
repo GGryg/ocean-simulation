@@ -21,13 +21,13 @@ out vec3 normals;
 void main()
 {
 
-    vec3 pos = aPos;
-    pos.x -= texture(u_dx, aTex).r * u_choppiness.x;
-    pos.y += texture(u_dy, aTex).r * u_displacement;
-    pos.z -= texture(u_dz, aTex).r * u_choppiness.y;
-    gl_Position = u_proj * u_view * u_model * vec4(pos, 1.0);
+	vec3 pos = aPos;
+	pos.x -= texture(u_dx, aTex).r * u_choppiness.x;
+	pos.y += texture(u_dy, aTex).r * u_displacement;
+	pos.z -= texture(u_dz, aTex).r * u_choppiness.y;
+	gl_Position = u_proj * u_view * u_model * vec4(pos, 1.0);
 
-    texCoord = aTex;
-    fragPosition = vec3(u_model * vec4(pos, 1.0));
-    normals = texture(u_normalMap, aTex).xyz;
+	texCoord = aTex;
+	fragPosition = vec3(u_model * vec4(pos, 1.0));
+	normals = texture(u_normalMap, aTex).xyz;
 }
