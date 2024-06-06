@@ -78,19 +78,11 @@ public:
 
 	void setAmplitude(float amplitude);
 
-	float amplitude() const;
-
 	void setWindSpeed(float windSpeed);
-
-	float windSpeed() const;
 
 	void setWindDirection(const glm::vec2 &windDirection);
 
-	const glm::vec2 &windDirection() const;
-
 	void setLength(float length);
-
-	float length() const;
 
 	void setSuppressorFactor(float suppressorFactor);
 

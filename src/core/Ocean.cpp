@@ -361,20 +361,10 @@ void Ocean::setAmplitude(float amplitude)
 	m_recalculateSpectrum = true;
 }
 
-float Ocean::amplitude() const
-{
-	return m_spectrumParams.amplitude;
-}
-
 void Ocean::setWindSpeed(float windSpeed)
 {
 	m_spectrumParams.windSpeed = windSpeed;
 	m_recalculateSpectrum = true;
-}
-
-float Ocean::windSpeed() const
-{
-	return m_spectrumParams.windSpeed;
 }
 
 void Ocean::setWindDirection(const glm::vec2 &windDirection)
@@ -383,20 +373,10 @@ void Ocean::setWindDirection(const glm::vec2 &windDirection)
 	m_recalculateSpectrum = true;
 }
 
-const glm::vec2 &Ocean::windDirection() const
-{
-	return m_spectrumParams.windDirection;
-}
-
 void Ocean::setLength(float length)
 {
 	m_spectrumParams.length = length;
 	m_recalculateSpectrum = true;
-}
-
-float Ocean::length() const
-{
-	return m_spectrumParams.length;
 }
 
 void Ocean::setSuppressorFactor(float suppressorFactor)
