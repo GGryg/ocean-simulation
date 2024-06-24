@@ -4,6 +4,11 @@ project(OceanSimulation)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXE_LINKER_FLAGS "-static")
 
+if(MSVC)
+    add_compile_options(/wd4804)
+    add_compile_options(/DINCREASE_BUFFER_LIMIT)
+endif()
+
 # config file
 configure_file(${PROJECT_SOURCE_DIR}/config.toml ${CMAKE_BINARY_DIR}/config.toml COPYONLY)
 
@@ -85,7 +90,7 @@ add_custom_command(
 )
 
 add_executable(${CMAKE_PROJECT_NAME}
-                                    "src/main.cpp"
+                                    "src/Main.cpp"
                                     "libs/glad/src/gl.c"
                                     "src/logger/logger.cpp"
                                     "src/core/Window.cpp"
