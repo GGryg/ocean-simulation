@@ -16,7 +16,7 @@ bubbleDensity = 1.0
 wavePeakScatterStrength = 1.0
 scatterStrength = 1.0
 scatterShadowStrength = 0.5
-heightWave = 0.5
+waveHeight = 0.5
 roughness = 0.08
 envLightStrength = 1.0
 
