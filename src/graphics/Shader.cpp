@@ -1,5 +1,5 @@
 #include "graphics/Shader.h"
-#include "graphics/shaderException.h"
+#include "graphics/ShaderException.h"
 
 #include <sstream>
 

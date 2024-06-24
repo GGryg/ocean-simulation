@@ -1,4 +1,4 @@
-#include "core/window.h"
+#include "core/Window.h"
 
 #include <sstream>
 

@@ -1,5 +1,5 @@
-#include "core/resourceLoader.h"
-#include "logger/logger.h"
+#include "core/ResourceLoader.h"
+#include "logger/Logger.h"
 #include "graphics/TextureException.h"
 #include <fstream>
 #include <sstream>
@@ -8,7 +8,7 @@
 #include <glad/gl.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include <graphics/shaderException.h>
+#include <graphics/ShaderException.h>
 
 gfx::ShaderPtr ResourceLoader::loadShader(const std::string &vertexShaderFile, const std::string &fragmentShaderFile)
 {

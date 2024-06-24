@@ -5,8 +5,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXE_LINKER_FLAGS "-static")
 
 if(MSVC)
-    add_compile_options(/wd4804)
-    add_compile_options(/DINCREASE_BUFFER_LIMIT)
+    message(FATAL_ERROR "MSVC is not supported. Please use a different compiler.")
+endif()
+
+if(APPLE)
+    message(FATAL_ERROR "MacOS is not supported. Please use a different operating system.")
 endif()
 
 # config file
@@ -24,7 +27,7 @@ add_subdirectory(libs/glm)
 # STB IMAGE
 set(STB_DIRS ${PROJECT_SOURCE_DIR}/libs/stb)
 
-# GLAD
+# glad
 include_directories(SYSTEM "libs/glad/include")
 include_directories(SYSTEM ${STB_DIRS})
 include_directories(SYSTEM "include")
@@ -82,17 +85,17 @@ file(GLOB GLFFT_GLOB
         ${GLFFT_PATH}/*.cpp
 )
 add_library(GLFFT ${GLFFT_GLOB})
-include_directories(${PROJECT_SOURCE_DIR}/libs/GLFFT)
+include_directories(${PROJECT_SOURCE_DIR}/libs/glfft)
 add_custom_command(
-        OUTPUT libs/GLFFT/glsl
-        WORKING_DIR libs/GLFFT/glsl
+        OUTPUT libs/glfft/glsl
+        WORKING_DIR libs/glfft/glsl
         COMMAND make
 )
 
 add_executable(${CMAKE_PROJECT_NAME}
                                     "src/Main.cpp"
                                     "libs/glad/src/gl.c"
-                                    "src/logger/logger.cpp"
+                                    "src/logger/Logger.cpp"
                                     "src/core/Window.cpp"
                                     "src/core/ResourceLoader.cpp"
                                     "src/graphics/Shader.cpp"

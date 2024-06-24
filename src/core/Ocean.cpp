@@ -2,7 +2,6 @@
 
 #include "core/ResourceLoader.h"
 #include "core/Constants.h"
-#include "graphics/ShaderException.h"
 
 #include <cstddef>
 #include <iostream>
