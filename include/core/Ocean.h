@@ -6,11 +6,11 @@
 #include <glm/glm.hpp>
 #include <unordered_map>
 
-#include "graphics/shader.h"
+#include "graphics/Shader.h"
 #include "graphics/VBuffer.h"
 #include "graphics/VArray.h"
 #include "graphics/EBuffer.h"
-#include "graphics/texture.h"
+#include "graphics/Texture.h"
 
 struct OceanVertex
 {
@@ -40,7 +40,7 @@ struct PBR
 	float wavePeakScatterStrength;
 	float scatterStrength;
 	float scatterShadowStrength;
-	float heightWave;
+	float waveHeight;
 	float roughness;
 	float envLightStrength;
 };
@@ -102,7 +102,7 @@ public:
 
 	void setScatterShadowStrength(float scatterShaderStrength);
 
-	void setHeightWave(float heightWave);
+	void setWaveHeight(float waveHeight);
 
 	void setRoughness(float roughness);
 

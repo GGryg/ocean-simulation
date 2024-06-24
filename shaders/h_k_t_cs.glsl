@@ -9,12 +9,12 @@ uniform float u_L;
 uniform float u_t; // time
 uniform float u_amplitude;
 
-layout (binding = 0, rgba32f) readonly uniform image2D tilde_h_0_k; // starting wave height field
-layout (binding = 1, rgba32f) readonly uniform image2D tilde_h_0_minusk; // starting wave height amplitude
+layout (binding = 0, rgba32f) readonly uniform image2D tilde_h_0_k;
+layout (binding = 1, rgba32f) readonly uniform image2D tilde_h_0_minusk;
 
-layout (binding = 2, rg32f) writeonly uniform image2D tilde_hkt_dx; // choppy x displacement
-layout (binding = 3, rg32f) writeonly uniform image2D tilde_hkt_dy; // height displacement
-layout (binding = 4, rg32f) writeonly uniform image2D tilde_hkt_dz; // choppy z displacement
+layout (binding = 2, rg32f) writeonly uniform image2D tilde_hkt_dx;
+layout (binding = 3, rg32f) writeonly uniform image2D tilde_hkt_dy;
+layout (binding = 4, rg32f) writeonly uniform image2D tilde_hkt_dz;
 
 vec2 complex_mul(vec2 c0, vec2 c1)
 {
@@ -63,19 +63,18 @@ void main()
 
 	// h0(x, t)
 	// x = (x, z), horizontal position
-	vec2 k0k = imageLoad(tilde_h_0_k, ivec2(gl_GlobalInvocationID.xy)).rg * u_amplitude;
+	vec2 h0k = imageLoad(tilde_h_0_k, ivec2(gl_GlobalInvocationID.xy)).rg * u_amplitude;
 
-	// hconj0(-k, t)
 	vec2 hconj0minusk = complex_conjugate(imageLoad(tilde_h_0_minusk, ivec2(gl_GlobalInvocationID.xy)).rg) * u_amplitude;
 
 	vec2 exp_iwt = eulerFormula(w);
 	vec2 exp_minus_iwt = complex_conjugate(exp_iwt);
 
 	// h(k, t) = h0(k)exp(iw(k)*t) + h0(-k)*exp(-iw(k)*t)
-	vec2 h_k_t_dy = complex_mul(k0k, exp_iwt) + complex_mul(hconj0minusk, exp_minus_iwt);
+	vec2 h_k_t_dy = complex_mul(h0k, exp_iwt) + complex_mul(hconj0minusk, exp_minus_iwt);
 
-	vec2 h_k_t_dx = complex_mul(vec2(0.0, -k.x), h_k_t_dy) / k_magnitute;
-	vec2 h_k_t_dz = complex_mul(vec2(0.0, -k.y), h_k_t_dy) / k_magnitute;
+	vec2 h_k_t_dx = complex_mul(vec2(0.0, -k.x/k_magnitute), h_k_t_dy);
+	vec2 h_k_t_dz = complex_mul(vec2(0.0, -k.y/k_magnitute), h_k_t_dy);
 
 	imageStore(tilde_hkt_dy, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dy, 0.0, 0.0));
 	imageStore(tilde_hkt_dx, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dx, 0.0, 0.0));

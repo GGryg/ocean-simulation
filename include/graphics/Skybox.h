@@ -6,8 +6,8 @@
 
 #include "VArray.h"
 #include "VBuffer.h"
-#include "shader.h"
-#include "texture.h"
+#include "Shader.h"
+#include "Texture.h"
 
 namespace gfx
 {

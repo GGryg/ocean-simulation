@@ -7,19 +7,19 @@ layout (binding = 0, r32f) uniform image2D displacementX;
 layout (binding = 1, r32f) uniform image2D displacementY;
 layout (binding = 2, r32f) uniform image2D displacementZ;
 
-vec4 permute(vec4 data, ivec2 id) {
-	return data * (1.0 - 2.0 * ((id.x + id.y) % 2));
+vec4 invert(vec4 data, ivec2 coord) {
+	return data * (1.0 - 2.0 * ((coord.x + coord.y) % 2));
 }
 
 void main()
 {
-	ivec2 x = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
 
-	vec4 dataX = permute(imageLoad(displacementX, x), x);
-	imageStore(displacementX, x, dataX);
-	vec4 dataY = permute(imageLoad(displacementY, x), x);
-	imageStore(displacementY, x, dataY);
-	vec4 dataZ = permute(imageLoad(displacementZ, x), x);
-	imageStore(displacementZ, x, dataZ);
+	vec4 dataX = invert(imageLoad(displacementX, texelCoord), texelCoord);
+	imageStore(displacementX, texelCoord, dataX);
+	vec4 dataY = invert(imageLoad(displacementY, texelCoord), texelCoord);
+	imageStore(displacementY, texelCoord, dataY);
+	vec4 dataZ = invert(imageLoad(displacementZ, texelCoord), texelCoord);
+	imageStore(displacementZ, texelCoord, dataZ);
 }
 

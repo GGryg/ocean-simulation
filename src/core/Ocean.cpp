@@ -1,8 +1,8 @@
-#include "core/ocean.h"
+#include "core/Ocean.h"
 
-#include "core/resourceLoader.h"
-#include "core/constants.h"
-#include "graphics/shaderException.h"
+#include "core/ResourceLoader.h"
+#include "core/Constants.h"
+#include "graphics/ShaderException.h"
 
 #include <cstddef>
 #include <iostream>
@@ -34,10 +34,6 @@ void Ocean::prepareResources()
 	m_ebo = std::make_unique<gfx::EBuffer>(m_indices.data(), m_indices.size(), GL_STATIC_DRAW);
 
 	shaders["ocean"] = ResourceLoader::get().loadShader("shaders/ocean_vs.glsl", "shaders/ocean_fs.glsl");
-	if (!shaders["ocean"]->isValid())
-	{
-		throw gfx::ShaderException("Failed to compile ocean shader");
-	}
 
 	textures["noise0"] = gfx::TexturePtr(ResourceLoader::get().loadTexture("resources/noise/noise0.png", true));
 	textures["noise0"]->bind();
@@ -62,10 +58,6 @@ void Ocean::prepareResources()
 
 
 	shaders["tilde_h0k"] = ResourceLoader::get().loadShader("shaders/h_0_k_cs.glsl");
-	if (!shaders["tilde_h0k"]->isValid())
-	{
-		throw gfx::ShaderException("Failed to compile tilde_h0k shader");
-	}
 
 	textures["tilde_h0k"] = std::make_unique<gfx::Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N,
 	                                                       GL_RGBA32F, GL_RGBA);
@@ -83,10 +75,6 @@ void Ocean::prepareResources()
 	textures["tilde_h0minusk"]->unbind();
 
 	shaders["tilde_hkt"] = ResourceLoader::get().loadShader("shaders/h_k_t_cs.glsl");
-	if (!shaders["tilde_hkt"]->isValid())
-	{
-		throw gfx::ShaderException("Failed to compile tilde_hkt shader");
-	}
 
 	textures["tilde_hkt_dx"] = std::make_unique<gfx::Texture>(
 		GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RG32F, GL_RG);
@@ -111,10 +99,6 @@ void Ocean::prepareResources()
 	textures["tilde_hkt_dz"]->unbind();
 
 	shaders["inversion"] = ResourceLoader::get().loadShader("shaders/inversion_cs.glsl");
-	if (!shaders["inversion"]->isValid())
-	{
-		throw gfx::ShaderException("Failed to compile inversion shader");
-	}
 
 	textures["dx"] = std::make_unique<gfx::Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_R32F,
 	                                                GL_RED);
@@ -133,10 +117,6 @@ void Ocean::prepareResources()
 	textures["dz"]->unbind();
 
 	shaders["normalMap"] = ResourceLoader::get().loadShader("shaders/normal_map_cs.glsl");
-	if (!shaders["normalMap"]->isValid())
-	{
-		throw gfx::ShaderException("Failed to compile normalMap shader");
-	}
 
 	textures["normalMap"] = std::make_unique<gfx::Texture>(GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N,
 	                                                       GL_RGBA32F, GL_RGBA);
@@ -340,7 +320,7 @@ void Ocean::draw(const glm::vec3 &cameraPosition, const glm::mat4 &proj, const g
 	shaders["ocean"]->setFloat("u_wavePeakScatterStrength", m_material.wavePeakScatterStrength);
 	shaders["ocean"]->setFloat("u_scatterStrength", m_material.scatterStrength);
 	shaders["ocean"]->setFloat("u_scatterShadowStrength", m_material.scatterShadowStrength);
-	shaders["ocean"]->setFloat("u_waveHeight", m_material.heightWave);
+	shaders["ocean"]->setFloat("u_waveHeight", m_material.waveHeight);
 	shaders["ocean"]->setFloat("u_envLightStrength", m_material.envLightStrength);
 
 	for (int j = 0; j < m_otherOptions.tiling; ++j)
@@ -425,9 +405,9 @@ void Ocean::setScatterShadowStrength(float scatterShaderStrength)
 	m_material.scatterShadowStrength = scatterShaderStrength;
 }
 
-void Ocean::setHeightWave(float heightWave)
+void Ocean::setWaveHeight(float waveHeight)
 {
-	m_material.heightWave = heightWave;
+	m_material.waveHeight = waveHeight;
 }
 
 void Ocean::setRoughness(float roughness)

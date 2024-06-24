@@ -26,12 +26,16 @@ uniform sampler2D u_noise3;
 // Box-Muller transform
 vec4 gaussian_random_number(vec2 texelCoord)
 {
+	// first random number
 	float u0 = 2.0 * M_PI * clamp(texture(u_noise0, texelCoord).r, MIN_NOISE_CLAMP, MAX_NOISE_CLAMP);
 	float v0 = sqrt(-2.0 * log(clamp(texture(u_noise1, texelCoord).r, MIN_NOISE_CLAMP, MAX_NOISE_CLAMP)));
+	vec2 r0 = vec2(v0 * cos(u0), v0 * sin(u0));
+	// second random number
 	float u1 = 2.0 * M_PI * clamp(texture(u_noise2, texelCoord).r, MIN_NOISE_CLAMP, MAX_NOISE_CLAMP);
 	float v1 = sqrt(-2.0 * log(clamp(texture(u_noise3, texelCoord).r, MIN_NOISE_CLAMP, MAX_NOISE_CLAMP)));
+	vec2 r1 = vec2(v1 * cos(u1), v1 * sin(u1));
 
-	return vec4(v0 * cos(u0), v0 * sin(u0), v1 * cos(u1), v1 * sin(u1));
+	return vec4(r0, r1);
 }
 
 float suppressWaves(float k_magnitute_2)

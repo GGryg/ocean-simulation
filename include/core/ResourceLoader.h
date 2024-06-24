@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "graphics/shader.h"
-#include "graphics/texture.h"
+#include "graphics/Shader.h"
+#include "graphics/Texture.h"
 
 class ResourceLoader
 {

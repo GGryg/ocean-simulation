@@ -1,6 +1,6 @@
 #include "core/Input.h"
 
-#include "core/constants.h"
+#include "core/Constants.h"
 
 std::array<bool, GLFW_KEY_LAST> Input::m_keyboardState{};
 std::array<bool, GLFW_KEY_LAST> Input::m_keyboardStateChanged{};

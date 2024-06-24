@@ -1,4 +1,4 @@
-#include "logger/logger.h"
+#include "logger/Logger.h"
 
 void Logger::log(const std::string &message, bool isError)
 {

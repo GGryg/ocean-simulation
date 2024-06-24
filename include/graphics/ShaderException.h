@@ -9,7 +9,7 @@ namespace gfx
 	{
 	public:
 		ShaderException(const std::string &error)
-			: std::runtime_error{error}
+			: std::runtime_error{"SHADAER: " + error}
 		{
 		}
 	};

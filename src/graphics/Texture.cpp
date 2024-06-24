@@ -1,4 +1,4 @@
-#include "graphics/texture.h"
+#include "graphics/Texture.h"
 
 namespace gfx
 {

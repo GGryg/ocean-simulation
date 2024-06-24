@@ -29,8 +29,6 @@ namespace gfx
 
 		void use() const;
 
-		bool isValid() const;
-
 		void setBool(const std::string &name, bool v) const;
 
 		void setInt(const std::string &name, int n) const;
@@ -50,7 +48,6 @@ namespace gfx
 
 		GLuint m_id{};
 		ShaderType m_type{};
-		bool m_valid;
 	};
 
 	using ShaderPtr = std::unique_ptr<Shader>;

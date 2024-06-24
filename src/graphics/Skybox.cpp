@@ -1,5 +1,5 @@
-#include "graphics/skybox.h"
-#include "core/resourceLoader.h"
+#include "graphics/Skybox.h"
+#include "core/ResourceLoader.h"
 
 #include <string>
 

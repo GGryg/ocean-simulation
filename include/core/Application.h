@@ -1,11 +1,11 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include "window.h"
-#include "graphics/camera.h"
+#include "Window.h"
+#include "graphics/Camera.h"
 #include "Input.h"
-#include "graphics/skybox.h"
-#include "ocean.h"
+#include "graphics/Skybox.h"
+#include "Ocean.h"
 
 #include "imgui.h"
 

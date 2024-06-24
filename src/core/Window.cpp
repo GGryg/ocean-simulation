@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-#include "logger/logger.h"
+#include "logger/Logger.h"
 
 
 void error_callback(int error, const char *description)

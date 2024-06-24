@@ -7,9 +7,9 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
-#include "core/constants.h"
-#include "logger/logger.h"
-#include "graphics/skybox.h"
+#include "core/Constants.h"
+#include "logger/Logger.h"
+#include "graphics/Skybox.h"
 
 
 Application::Application(const std::string &windowTitle, const SpectrumParams &spectrumParams, const PBR &material,
@@ -24,6 +24,7 @@ Application::Application(const std::string &windowTitle, const SpectrumParams &s
 	, m_materialGui(material)
 	, m_otherGui(otherOptions)
 	, m_io(nullptr)
+	, m_skybox()
 {
 }
 
@@ -109,7 +110,7 @@ void Application::processInput()
 	}
 	if (m_input.key(GLFW_KEY_S))
 	{
-		m_camera.processKeyboard(m_deltaTime,gfx::Camera::MoveDirection::back);
+		m_camera.processKeyboard(m_deltaTime, gfx::Camera::MoveDirection::back);
 	}
 	if (m_input.key(GLFW_KEY_D))
 	{
@@ -152,31 +153,37 @@ void Application::drawUI()
 		{
 			if (ImGui::BeginTabItem("Spectrum"))
 			{
-				if (ImGui::InputFloat("Amplitude", &m_spectrumGui.amplitude))
+				if (ImGui::SliderFloat("Amplitude", &m_spectrumGui.amplitude, constants::minAmplitude,
+				                       constants::maxAmplitude))
 				{
 					m_ocean.setAmplitude(m_spectrumGui.amplitude);
 				}
-				if (ImGui::SliderFloat("Wind speed", &m_spectrumGui.windSpeed, 0.0f, 35.0f))
+				if (ImGui::SliderFloat("Wind speed", &m_spectrumGui.windSpeed, constants::minWindSpeed,
+				                       constants::maxWindSpeed))
 				{
 					m_ocean.setWindSpeed(m_spectrumGui.windSpeed);
 				}
-				if (ImGui::SliderFloat2("Wind direction", glm::value_ptr(m_spectrumGui.windDirection), -1.0f, 1.0f))
+				if (ImGui::SliderFloat2("Wind direction", glm::value_ptr(m_spectrumGui.windDirection),
+				                        constants::minWindDirection, constants::maxWindDirection))
 				{
 					m_ocean.setWindDirection(m_spectrumGui.windDirection);
 				}
-				if (ImGui::SliderFloat("Length", &m_spectrumGui.length, 100.0f, 3000.0f))
+				if (ImGui::SliderFloat("Length", &m_spectrumGui.length, constants::minLength, constants::maxLength))
 				{
 					m_ocean.setLength(m_spectrumGui.length);
 				}
-				if (ImGui::SliderFloat("Suppressor factor", &m_spectrumGui.suppressorFactor, 0.0f, 30.0f))
+				if (ImGui::SliderFloat("Suppressor factor", &m_spectrumGui.suppressorFactor,
+				                       constants::minSuppressorFactor, constants::maxSuppressorFactor))
 				{
 					m_ocean.setSuppressorFactor(m_spectrumGui.suppressorFactor);
 				}
-				if (ImGui::InputFloat("Displacement scale", &m_spectrumGui.displacementScale))
+				if (ImGui::SliderFloat("Displacement scale", &m_spectrumGui.displacementScale,
+				                       constants::minDisplacementScale, constants::maxDisplacementScale))
 				{
 					m_ocean.setDisplacementScale(m_spectrumGui.displacementScale);
 				}
-				if (ImGui::InputFloat2("Choppiness scale", glm::value_ptr(m_spectrumGui.choppinessScale)))
+				if (ImGui::SliderFloat2("Choppiness scale", glm::value_ptr(m_spectrumGui.choppinessScale),
+				                        constants::minChoppinessScale, constants::maxChoppinessScale))
 				{
 					m_ocean.setChoppinessScale(m_spectrumGui.choppinessScale);
 				}
@@ -185,7 +192,8 @@ void Application::drawUI()
 		}
 		if (ImGui::BeginTabItem("PBR"))
 		{
-			if (ImGui::SliderFloat("Roughness", &m_materialGui.roughness, 0.01f, 1.0f))
+			if (ImGui::SliderFloat("Roughness", &m_materialGui.roughness, constants::minRoughness,
+			                       constants::maxRoughness))
 			{
 				m_ocean.setRoughness(m_materialGui.roughness);
 			}
@@ -197,9 +205,10 @@ void Application::drawUI()
 			{
 				m_ocean.setSunColor(m_materialGui.sunColor);
 			}
-			if (ImGui::SliderFloat("Wave height", &m_materialGui.heightWave, 0.0f, 10.0f))
+			if (ImGui::SliderFloat("Wave height", &m_materialGui.waveHeight, constants::minWaveHeight,
+			                       constants::maxWaveHeight))
 			{
-				m_ocean.setHeightWave(m_materialGui.heightWave);
+				m_ocean.setWaveHeight(m_materialGui.waveHeight);
 			}
 			if (ImGui::ColorEdit3("Scatter color", glm::value_ptr(m_materialGui.scatterColor),
 			                      ImGuiColorEditFlags_Float))
@@ -210,23 +219,28 @@ void Application::drawUI()
 			{
 				m_ocean.setBubbleColor(m_materialGui.bubbleColor);
 			}
-			if (ImGui::SliderFloat("Bubble density", &m_materialGui.bubbleDensity, 0.0f, 10.0f))
+			if (ImGui::SliderFloat("Bubble density", &m_materialGui.bubbleDensity, constants::minBubbleDensity,
+			                       constants::maxBubbleDensity))
 			{
 				m_ocean.setBubbleDensity(m_materialGui.bubbleDensity);
 			}
-			if (ImGui::SliderFloat("Wave peak scatter strength", &m_materialGui.wavePeakScatterStrength, 0.0f, 10.0f))
+			if (ImGui::SliderFloat("Wave peak scatter strength", &m_materialGui.wavePeakScatterStrength,
+			                       constants::minWavePeakScatterStrength, constants::maxWavePeakScatterStrength))
 			{
 				m_ocean.setWavePeakScatterStrength(m_materialGui.wavePeakScatterStrength);
 			}
-			if (ImGui::SliderFloat("Scatter strength", &m_materialGui.scatterStrength, 0.0f, 10.0f))
+			if (ImGui::SliderFloat("Scatter strength", &m_materialGui.scatterStrength, constants::minScatterStrength,
+			                       constants::maxScatterStrength))
 			{
 				m_ocean.setScatterStrength(m_materialGui.scatterStrength);
 			}
-			if (ImGui::SliderFloat("Scatter shadow strength", &m_materialGui.scatterShadowStrength, 0.0f, 10.0f))
+			if (ImGui::SliderFloat("Scatter shadow strength", &m_materialGui.scatterShadowStrength,
+			                       constants::minScatterShadowStrength, constants::maxScatterShadowStrength))
 			{
 				m_ocean.setScatterShadowStrength(m_materialGui.scatterShadowStrength);
 			}
-			if (ImGui::SliderFloat("Enviroment Light Strength", &m_materialGui.envLightStrength, 0.0f, 10.0f))
+			if (ImGui::SliderFloat("Environment Light Strength", &m_materialGui.envLightStrength,
+			                       constants::minEnvironmentLightStrength, constants::maxEnvironmentLightStrength))
 			{
 				m_ocean.setEnvLightStrength(m_materialGui.envLightStrength);
 			}
@@ -239,7 +253,7 @@ void Application::drawUI()
 		{
 			m_ocean.setTiling(m_otherGui.tiling);
 		}
-		if (ImGui::SliderFloat("Speed", &m_otherGui.speed, -10.0f, 10.0f))
+		if (ImGui::SliderFloat("Speed", &m_otherGui.speed, constants::minSpeed, constants::maxSpeed))
 		{
 			m_ocean.setSpeed(m_otherGui.speed);
 		}

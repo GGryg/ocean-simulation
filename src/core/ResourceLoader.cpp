@@ -1,5 +1,6 @@
 #include "core/resourceLoader.h"
 #include "logger/logger.h"
+#include "graphics/TextureException.h"
 #include <fstream>
 #include <sstream>
 #include <exception>
@@ -7,16 +8,14 @@
 #include <glad/gl.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <graphics/shaderException.h>
 
 gfx::ShaderPtr ResourceLoader::loadShader(const std::string &vertexShaderFile, const std::string &fragmentShaderFile)
 {
 	Logger::get().log("Loading vertex and fragment shader from files: " + vertexShaderFile + ", " + fragmentShaderFile);
 	std::string vertexShader = loadShaderFromFile(vertexShaderFile);
 	std::string fragmentShader = loadShaderFromFile(fragmentShaderFile);
-	if (vertexShader.empty() || fragmentShader.empty())
-	{
-		return nullptr;
-	}
+
 	return std::make_unique<gfx::Shader>(vertexShader, fragmentShader);
 }
 
@@ -24,10 +23,7 @@ gfx::ShaderPtr ResourceLoader::loadShader(const std::string &computeShaderFile)
 {
 	Logger::get().log("Loading compute shader from file: " + computeShaderFile);
 	std::string computeShader = loadShaderFromFile(computeShaderFile);
-	if (computeShader.empty())
-	{
-		return nullptr;
-	}
+
 	return std::make_unique<gfx::Shader>(computeShader);
 }
 
@@ -50,9 +46,7 @@ std::string ResourceLoader::loadShaderFromFile(const std::string &shaderPath)
 	}
 	catch (std::exception &ex)
 	{
-		Logger::get().log("SHADER: Failed to read shader file: " + shaderPath, true);
-		Logger::get().log(ex.what(), true);
-		return "";
+		throw gfx::ShaderException("Failed to read shader file: " + shaderPath);
 	}
 
 	return shaderSource;
@@ -68,8 +62,7 @@ gfx::TexturePtr ResourceLoader::loadTexture(const std::string &textureFile, bool
 	unsigned char *data = stbi_load(textureFile.c_str(), &width, &height, &nrChannels, 0);
 	if (!data)
 	{
-		Logger::get().log("TEXTURE: Failed to load texture", true);
-		return nullptr;
+		throw gfx::TextureException("Failed to load texture");
 	}
 
 	GLenum internalFormat = alpha ? GL_RGBA : GL_RGB;
@@ -99,8 +92,7 @@ gfx::TexturePtr ResourceLoader::loadCubemap(const std::vector<std::string> &face
 		texture->setHeight(height);
 		if (!data)
 		{
-			Logger::get().log("TEXTURE: Failed to load cubemap texture: " + facesPath[i], true);
-			return nullptr;
+			throw gfx::TextureException("Failed to load cubemap texture: " + facesPath[i]);
 		}
 		texture->texImageCubemap(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, data);
 

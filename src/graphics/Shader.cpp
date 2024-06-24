@@ -1,11 +1,12 @@
-#include "graphics/shader.h"
-#include "logger/logger.h"
+#include "graphics/Shader.h"
+#include "graphics/shaderException.h"
+
+#include <sstream>
 
 namespace gfx
 {
 	Shader::Shader(const std::string &vertexShaderSource, const std::string &framgnetShaderSource)
 		: m_type{ShaderType::normal}
-		, m_valid{true}
 	{
 		m_id = glCreateProgram();
 		GLuint vertexShader = compile(vertexShaderSource, GL_VERTEX_SHADER);
@@ -23,7 +24,6 @@ namespace gfx
 
 	Shader::Shader(const std::string &computeShaderSource)
 		: m_type{ShaderType::compute}
-		, m_valid{true}
 	{
 		m_id = glCreateProgram();
 		GLuint computeShader = compile(computeShaderSource, GL_COMPUTE_SHADER);
@@ -37,11 +37,6 @@ namespace gfx
 	void Shader::use() const
 	{
 		glUseProgram(m_id);
-	}
-
-	bool Shader::isValid() const
-	{
-		return m_valid;
 	}
 
 	void Shader::setBool(const std::string &name, bool v) const
@@ -97,10 +92,10 @@ namespace gfx
 			glGetProgramiv(shader, GL_LINK_STATUS, &success);
 			if (!success)
 			{
-				m_valid = false;
 				glGetProgramInfoLog(shader, 1024, nullptr, infoLog);
-				Logger::get().log("Problem with program linking", true);
-				Logger::get().log(infoLog, true);
+				std::stringstream stream;
+				stream << "Problem with program linking: " << infoLog;
+				throw ShaderException(stream.str());
 			}
 		}
 		else
@@ -108,10 +103,10 @@ namespace gfx
 			glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 			if (!success)
 			{
-				m_valid = false;
 				glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
-				Logger::get().log("Problem with compiling shader", true);
-				Logger::get().log(infoLog, true);
+				std::stringstream stream;
+				stream << "Problem with shader linking: " << infoLog;
+				throw ShaderException(stream.str());
 			}
 		}
 	}
