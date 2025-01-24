@@ -17,7 +17,7 @@ float Input::m_mouseYOffset = 0.0f;
 bool Input::m_cameraMode = false;
 bool Input::m_firstMouse = true;
 
-void Input::mosueCallback(GLFWwindow *window, double xPosIn, double yPosIn)
+void Input::mouseCallback(GLFWwindow *window, double xPosIn, double yPosIn)
 {
 	if (m_cameraMode)
 	{

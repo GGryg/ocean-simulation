@@ -23,7 +23,7 @@ namespace gfx
 	class Shader
 	{
 	public:
-		Shader(const std::string &vertexShaderSource, const std::string &framgnetShaderSource);
+		Shader(const std::string &vertexShaderSource, const std::string &fragmentShaderSource);
 
 		Shader(const std::string &computeShaderSource);
 

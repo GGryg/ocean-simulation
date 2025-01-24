@@ -10,10 +10,10 @@ namespace gfx
 		, m_up(0.0f)
 		, m_right(0.0f)
 		, m_worldUp{worldUp}
-		, m_yaw{yaw}
-		, m_pitch{pitch}
 		, m_movementSpeed{200.0f}
 		, m_mouseSensitivity{0.5f}
+		, m_yaw{yaw}
+		, m_pitch{pitch}
 	{
 		updateVectors();
 	}

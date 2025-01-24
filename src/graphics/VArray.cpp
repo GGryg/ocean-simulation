@@ -2,7 +2,7 @@
 
 namespace gfx
 {
-	VArray::VArray() // NOLINT(*-pro-type-member-init)
+	VArray::VArray()
 	{
 		glGenVertexArrays(1, &m_id);
 	}
@@ -30,7 +30,7 @@ namespace gfx
 		glBindVertexArray(m_id);
 	}
 
-	void VArray::unbind() const // NOLINT(*-convert-member-functions-to-static)
+	void VArray::unbind() const
 	{
 		glBindVertexArray(0);
 	}

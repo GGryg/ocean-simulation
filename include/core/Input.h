@@ -10,7 +10,7 @@ class Input
 public:
 	Input() = default;
 
-	static void mosueCallback(GLFWwindow *window, double xPosIn, double yPosIn);
+	static void mouseCallback(GLFWwindow *window, double xPosIn, double yPosIn);
 
 	static void keyboardCallback(GLFWwindow *window, int key, int scanCode, int action, int mods);
 

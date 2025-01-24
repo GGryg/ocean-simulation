@@ -8,7 +8,7 @@
 class Window
 {
 public:
-	Window(int width, int heigth, std::string title);
+	Window(int width, int height, std::string title);
 
 	~Window();
 

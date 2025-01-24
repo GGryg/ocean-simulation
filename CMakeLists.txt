@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXE_LINKER_FLAGS "-static")
 
 if(MSVC)
-    message(FATAL_ERROR "MSVC is not supported. Please use a different compiler.")
+    message(FATAL_ERROR "MSVC is not supported. Please use the g++ compiler.")
 endif()
 
 if(APPLE)

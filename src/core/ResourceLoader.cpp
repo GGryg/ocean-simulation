@@ -7,6 +7,7 @@
 
 #include <glad/gl.h>
 #define STB_IMAGE_IMPLEMENTATION
+#include <format>
 #include <stb_image.h>
 #include <graphics/ShaderException.h>
 
@@ -44,9 +45,9 @@ std::string ResourceLoader::loadShaderFromFile(const std::string &shaderPath)
 
 		shaderSource = shaderStream.str();
 	}
-	catch (std::exception &ex)
+	catch (const std::exception &ex)
 	{
-		throw gfx::ShaderException("Failed to read shader file: " + shaderPath);
+		throw gfx::ShaderException(std::format("Failed to read shader file: {}\nException: {}\n", shaderPath, ex.what()));
 	}
 
 	return shaderSource;
@@ -73,7 +74,7 @@ gfx::TexturePtr ResourceLoader::loadTexture(const std::string &textureFile, bool
 	texture->generate(data);
 	stbi_image_free(data);
 
-	return std::move(texture);
+	return texture;
 }
 
 gfx::TexturePtr ResourceLoader::loadCubemap(const std::vector<std::string> &facesPath)
@@ -101,5 +102,5 @@ gfx::TexturePtr ResourceLoader::loadCubemap(const std::vector<std::string> &face
 	texture->clampToEdgeCube();
 	texture->trilinearFilter();
 
-	return std::move(texture);
+	return texture;
 }

@@ -47,13 +47,14 @@ float fresnelSchlick(vec3 N, vec3 V, float a)
 	float eta = 1.0 / 1.333; // refractive index of air / refractive index of water
 	float R = ((eta - 1.0) * (eta - 1)) / ((eta + 1.0) * (eta + 1.0));
 
-	float numerator = pow(1.0 - dot(N, V), 5.0 * exp(-2.69 * a));
+	float numerator = pow(1.0 - max(dot(N, V), 0.0001), 5.0 * exp(-2.69 * a));
 	float F = R + (1.0 - R) * numerator / (1.0 + 22.7 * pow(a, 1.5));
 
 	return clamp(F, 0.0, 1.0);
 }
 
 // Based on "Wakes, Explosions and Lighting: Interactive Water Simulation in Atlas"
+// and Acerola's video
 void main()
 {
 	if (u_wireframeMode == 1)
@@ -82,9 +83,9 @@ void main()
 
 	float waveH = max(0.0, fragPosition.y) * u_waveHeight;
 
-	float k1 = u_wavePeakScatterStrength * waveH * pow(max(0.0, dot(L, -V)), 4.0) * pow(0.5 - 0.5 * dot(L, N), 3.0);
-	float k2 = u_scatterStrength * pow(max(0.0, dot(V, N)), 2.0);
-	vec3 k3 = u_scatterShadowStrength * dot(N, L) * u_scatterColor * u_sunColor;
+	float k1 = u_wavePeakScatterStrength * waveH * pow(max(0.0001, dot(L, -V)), 4.0) * pow(0.5 - 0.5 * dot(L, N), 3.0);
+	float k2 = u_scatterStrength * pow(max(0.0001, dot(V, N)), 2.0);
+	vec3 k3 = u_scatterShadowStrength * max(dot(N, L), 0.0001) * u_scatterColor * u_sunColor;
 	vec3 k4 = u_bubbleDensity * u_bubbleColor * u_sunColor;
 
 	vec3 scatter = (k1 + k2) * u_scatterColor * u_sunColor * (1.0 / (1.0 + lightMask));

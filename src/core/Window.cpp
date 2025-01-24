@@ -166,7 +166,7 @@ const std::string &Window::title() const
 
 void Window::setViewport() const
 {
-	glViewport(0, 0, m_width, m_height); // NOLINT(*-narrowing-conversions)
+	glViewport(0, 0, m_width, m_height);
 }
 
 bool Window::isOpen() const
@@ -184,7 +184,7 @@ void Window::swapBuffers() const
 	glfwSwapBuffers(m_window);
 }
 
-void Window::pollEvents() const // NOLINT(*-convert-member-functions-to-static)
+void Window::pollEvents() const
 {
 	glfwPollEvents();
 }

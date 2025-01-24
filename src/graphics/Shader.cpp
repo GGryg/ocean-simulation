@@ -5,12 +5,12 @@
 
 namespace gfx
 {
-	Shader::Shader(const std::string &vertexShaderSource, const std::string &framgnetShaderSource)
+	Shader::Shader(const std::string &vertexShaderSource, const std::string &fragmentShaderSource)
 		: m_type{ShaderType::normal}
 	{
 		m_id = glCreateProgram();
 		GLuint vertexShader = compile(vertexShaderSource, GL_VERTEX_SHADER);
-		GLuint fragmentShader = compile(framgnetShaderSource, GL_FRAGMENT_SHADER);
+		GLuint fragmentShader = compile(fragmentShaderSource, GL_FRAGMENT_SHADER);
 
 		glAttachShader(m_id, vertexShader);
 		glAttachShader(m_id, fragmentShader);

@@ -17,20 +17,20 @@ Application::Application(const std::string &windowTitle, const SpectrumParams &s
 	: m_window(constants::windowWidth, constants::windowHeight, windowTitle)
 	, m_camera(glm::vec3(0.0f, 16.0f, 30.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f)
 	, m_ocean(spectrumParams, material, otherOptions)
+	, m_skybox()
 	, m_textureSelection(static_cast<int>(Ocean::TextureVis::hildeh0k))
 	, m_textureNames(
-		  "Phillips spectrum k\0Phillips spectrum -k\0tilde h dx\0tilde h dy\0tilde h dz\0dx\0dy\0dz\0Normal map\0")
+		"Phillips spectrum k\0Phillips spectrum -k\0tilde h dx\0tilde h dy\0tilde h dz\0dx\0dy\0dz\0Normal map\0")
 	, m_spectrumGui(spectrumParams)
 	, m_materialGui(material)
 	, m_otherGui(otherOptions)
 	, m_io(nullptr)
-	, m_skybox()
 {
 }
 
 void Application::init()
 {
-	glfwSetCursorPosCallback(m_window.window(), Input::mosueCallback);
+	glfwSetCursorPosCallback(m_window.window(), Input::mouseCallback);
 	glfwSetKeyCallback(m_window.window(), Input::keyboardCallback);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -146,7 +146,7 @@ void Application::drawUI()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame(); {
-		ImGui::Begin("Ocean simulaton!", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+		ImGui::Begin("Ocean simulation!", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 		ImGui::Text("Press to F to catch/uncatch cursor");
 
 		if (ImGui::BeginTabBar("Parameters", ImGuiTableFlags_None))

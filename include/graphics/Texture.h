@@ -9,7 +9,7 @@ namespace gfx
 	class Texture
 	{
 	public:
-		Texture(GLenum target, GLuint width, GLuint height, GLenum internalFormat, GLenum imageFormat);
+		Texture(GLenum target, GLuint width, GLuint height, GLenum internalFormat, GLenum imageFormat);//
 
 		Texture(GLenum target, GLuint width, GLuint height, GLuint nrChannels, GLenum internalFormat,
 		        GLenum imageFormat);
@@ -18,7 +18,7 @@ namespace gfx
 
 		~Texture();
 
-		void generate(unsigned char *data);
+		void generate(const unsigned char *data) const;
 
 		void bindActive(GLuint unit) const;
 
@@ -30,25 +30,25 @@ namespace gfx
 
 		void unbind() const;
 
-		void neareastFilter();
+		void nearestFilter() const;
 
-		void bilinearFilter();
+		void bilinearFilter() const;
 
-		void trilinearFilter();
+		void trilinearFilter() const;
 
 		void clampToBorder();
 
-		void clampToEdge();
+		void clampToEdge() const;
 
-		void clampToEdgeCube();
+		void clampToEdgeCube() const;
 
-		void repeat();
+		void repeat() const;
 
-		void mirrorRepeat();
+		void mirrorRepeat() const;
 
-		void allocateStorage(GLuint levels);
+		void allocateStorage(GLuint levels) const;
 
-		void texImageCubemap(GLenum target, unsigned char *data);
+		void texImageCubemap(GLenum target, const unsigned char *data) const;
 
 		void setWidth(GLuint width);
 

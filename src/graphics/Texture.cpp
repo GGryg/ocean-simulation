@@ -28,7 +28,7 @@ namespace gfx
 	}
 
 
-	Texture::Texture(GLenum target, GLuint width, GLuint height) // NOLINT(*-pro-type-member-init)
+	Texture::Texture(GLenum target, GLuint width, GLuint height)
 		: m_target(target)
 		, m_width(width)
 		, m_height(height)
@@ -41,11 +41,10 @@ namespace gfx
 		glDeleteTextures(1, &m_id);
 	}
 
-	void Texture::generate(unsigned char *data) // NOLINT(*-make-member-function-const)
+	void Texture::generate(const unsigned char *data) const
 	{
 		glBindTexture(m_target, m_id);
 		glTexImage2D(m_target, 0, m_internalFormat, m_width, m_height, 0, m_imageFormat, GL_UNSIGNED_BYTE, data);
-		// NOLINT(*-narrowing-conversions)
 		glBindTexture(m_target, 0);
 	}
 
@@ -64,7 +63,6 @@ namespace gfx
 	{
 		bindActive(unit);
 		glBindImageTexture(unit, m_id, levels, GL_FALSE, 0, access, m_internalFormat);
-		// NOLINT(*-narrowing-conversions)
 	}
 
 
@@ -79,65 +77,64 @@ namespace gfx
 		glBindTexture(m_target, 0);
 	}
 
-	void Texture::neareastFilter() // NOLINT(*-make-member-function-const)
+	void Texture::nearestFilter() const
 	{
 		glTexParameteri(m_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(m_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	}
 
-	void Texture::bilinearFilter() // NOLINT(*-make-member-function-const)
+	void Texture::bilinearFilter() const
 	{
 		glTexParameteri(m_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(m_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	}
 
-	void Texture::trilinearFilter() // NOLINT(*-make-member-function-const)
+	void Texture::trilinearFilter() const
 	{
 		glTexParameteri(m_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glGenerateMipmap(m_target);
 		glTexParameteri(m_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	}
 
-	void Texture::clampToBorder() // NOLINT(*-make-member-function-const)
+	void Texture::clampToBorder()
 	{
 		glTexParameteri(m_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 		glTexParameteri(m_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	}
 
-	void Texture::clampToEdge() // NOLINT(*-make-member-function-const)
+	void Texture::clampToEdge() const
 	{
 		glTexParameteri(m_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(m_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 
-	void Texture::clampToEdgeCube() // NOLINT(*-make-member-function-const)
+	void Texture::clampToEdgeCube() const
 	{
 		glTexParameteri(m_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(m_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(m_target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	}
 
-	void Texture::repeat() // NOLINT(*-make-member-function-const)
+	void Texture::repeat() const
 	{
 		glTexParameteri(m_target, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(m_target, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 
-	void Texture::mirrorRepeat() // NOLINT(*-make-member-function-const)
+	void Texture::mirrorRepeat() const
 	{
 		glTexParameteri(m_target, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 		glTexParameteri(m_target, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 	}
 
-	void Texture::allocateStorage(GLuint levels) // NOLINT(*-make-member-function-const)
+	void Texture::allocateStorage(GLuint levels) const
 	{
-		glTexStorage2D(m_target, levels, m_internalFormat, m_width, m_height); // NOLINT(*-narrowing-conversions)
+		glTexStorage2D(m_target, levels, m_internalFormat, m_width, m_height);
 	}
 
-	void Texture::texImageCubemap(GLenum target, unsigned char *data) // NOLINT(*-make-member-function-const)
+	void Texture::texImageCubemap(GLenum target, const unsigned char *data) const
 	{
 		glTexImage2D(target, 0, GL_RGB16F, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		// NOLINT(*-narrowing-conversions)
 	}
 
 	void Texture::setWidth(GLuint width)

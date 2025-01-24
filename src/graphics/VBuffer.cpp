@@ -2,7 +2,7 @@
 
 namespace gfx
 {
-	VBuffer::VBuffer(const void *data, size_t size, GLenum type) // NOLINT(*-pro-type-member-init)
+	VBuffer::VBuffer(const void *data, size_t size, GLenum type)
 	{
 		glGenBuffers(1, &m_id);
 		bind();
@@ -19,7 +19,7 @@ namespace gfx
 		glBindBuffer(GL_ARRAY_BUFFER, m_id);
 	}
 
-	void VBuffer::unbind() const // NOLINT(*-convert-member-functions-to-static)
+	void VBuffer::unbind() const
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}

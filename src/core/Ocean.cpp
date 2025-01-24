@@ -37,22 +37,22 @@ void Ocean::prepareResources()
 	textures["noise0"] = gfx::TexturePtr(ResourceLoader::get().loadTexture("resources/noise/noise0.png", true));
 	textures["noise0"]->bind();
 	textures["noise0"]->clampToEdge();
-	textures["noise0"]->neareastFilter();
+	textures["noise0"]->nearestFilter();
 	textures["noise0"]->unbind();
 	textures["noise1"] = gfx::TexturePtr(ResourceLoader::get().loadTexture("resources/noise/noise1.png", true));
 	textures["noise1"]->bind();
 	textures["noise1"]->clampToEdge();
-	textures["noise1"]->neareastFilter();
+	textures["noise1"]->nearestFilter();
 	textures["noise1"]->unbind();
 	textures["noise2"] = gfx::TexturePtr(ResourceLoader::get().loadTexture("resources/noise/noise2.png", true));
 	textures["noise2"]->bind();
 	textures["noise2"]->clampToEdge();
-	textures["noise2"]->neareastFilter();
+	textures["noise2"]->nearestFilter();
 	textures["noise2"]->unbind();
 	textures["noise3"] = gfx::TexturePtr(ResourceLoader::get().loadTexture("resources/noise/noise3.png", true));
 	textures["noise3"]->bind();
 	textures["noise3"]->clampToEdge();
-	textures["noise3"]->neareastFilter();
+	textures["noise3"]->nearestFilter();
 	textures["noise3"]->unbind();
 
 
@@ -63,14 +63,14 @@ void Ocean::prepareResources()
 	textures["tilde_h0k"]->bind();
 	textures["tilde_h0k"]->allocateStorage(1);
 	textures["tilde_h0k"]->clampToEdge();
-	textures["tilde_h0k"]->neareastFilter();
+	textures["tilde_h0k"]->nearestFilter();
 	textures["tilde_h0k"]->unbind();
 	textures["tilde_h0minusk"] = std::make_unique<gfx::Texture>(
 		GL_TEXTURE_2D, m_spectrumParams.N, m_spectrumParams.N, GL_RGBA32F, GL_RGBA);
 	textures["tilde_h0minusk"]->bind();
 	textures["tilde_h0minusk"]->allocateStorage(1);
 	textures["tilde_h0minusk"]->clampToEdge();
-	textures["tilde_h0minusk"]->neareastFilter();
+	textures["tilde_h0minusk"]->nearestFilter();
 	textures["tilde_h0minusk"]->unbind();
 
 	shaders["tilde_hkt"] = ResourceLoader::get().loadShader("shaders/h_k_t_cs.glsl");
